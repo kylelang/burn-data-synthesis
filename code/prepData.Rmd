@@ -1,0 +1,430 @@
+---
+title: "Prepare Data"
+author: "Kyle M. Lang"
+date: "2021-10-22"
+output: 
+ prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+    toc: true
+    #toc_float: true
+    toc_depth: 2
+    #numbered_sections: true
+    df_print: paged
+    self_contained: false
+    css: my_style.css
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",  
+                      dev.args = list(bg = "transparent")
+                      )
+```
+
+In this script, we'll explore/clean the burn data and prepare them for 
+synthesis/imputation. We'll do the synthesis/imputation in a separate script.
+
+---
+
+# Data Ingest
+
+---
+
+First, we'll clear the workspace, load necessary packages, and define some 
+global variables.
+
+```{r, warning = FALSE, message = FALSE}
+rm(list = ls(all = TRUE))
+
+library(ggplot2)
+library(plotly)
+library(viridis)
+library(haven)
+library(mice)
+library(xtable)
+library(knitr)
+
+dataDir <- "../../data/"
+fn      <- "Social Impact Simulatie Totaal.sav"
+```
+
+Now, we'll read in the data.
+
+```{r, cache = TRUE}
+dat0 <- read_sav(paste0(dataDir, fn))
+
+dim(dat0)
+head(dat0)
+```
+
+That looks to have been successful. Let's explore the data.
+
+---
+
+# General Data Screening
+
+---
+
+First, we'll check the classes of each column.
+
+```{r}
+sapply(dat0, function(x) { 
+  tmp <- class(x)
+  tmp[length(tmp)] 
+  }
+  )
+```
+
+Everything read in as numeric. We need to convert the categorical variables to 
+factors.
+
+```{r}
+facNames <- c("partner",
+              "partner_incl",
+              "gender",
+              "Surgeries",
+              "marital",
+              "education",
+              "dep_hist",
+              "dep_treat",
+              "gender_p",
+              "education_p",
+              "presence_p",
+              "relation_t3")
+dat0[facNames] <- lapply(dat0[facNames], as_factor)
+```
+
+Let's do a quick a dirty check for constant columns.
+
+```{r}
+nLevels <- sapply(dat0, function(x) length(unique(na.omit(x))))
+any(nLevels == 1)
+```
+
+## Missing Data
+
+How much missing data are we dealing with?
+
+```{r}
+pm <- colMeans(is.na(dat0))
+
+range(pm[pm > 0])
+hist(pm)
+pm
+```
+
+What does the covariance coverage look like?
+
+```{r}
+cc <- md.pairs(dat0)$rr / nrow(dat0)
+
+range(cc[cc < 1])
+
+hist(cc)
+```
+
+Not awful. There is quite a large cluster of coverages around 30% - 40%, but we 
+should be able to deal with that.
+
+---
+
+What kind of missing data patterns are we looking at?
+
+```{r, out.width = "100%"}
+## Calculate response patterns:
+pats <- md.pattern(dat0)
+```
+
+Hmm...that's not a very enlightening figure. At least we can compute the number 
+of unique response patterns.
+
+```{r}
+nrow(pats) - 1
+```
+
+---
+
+# Exploring Partner Data
+
+---
+
+## Partner Flag Variables
+
+What do the partner flags look like?
+
+```{r, echo = FALSE}
+t1 <- table(partner = dat0$partner, useNA = "ifany")
+t2 <- xtabs(~ partner + partner_incl, data = dat0, addNA = TRUE)
+kable(t1)
+kable(t2)
+```
+
+I think the `partner` variable is junk.
+
+- All cases with *unknown* partner status, and almost all cases who claim to 
+have a partner are missing on the `partner_incl` variable.
+   - I guess the first makes sense, but the second doesn't.
+- Also, of the `r t1[3]` cases who claim not to have a partner, `r t2[3, 1]` 
+simultaneously claim that their non-existant partner will participate.
+
+## Partner Data
+
+What about the partner data themselves?
+
+```{r}
+## Factor indicating partner participation:
+pIncl <- dat0$partner_incl
+
+## Extract the partner data:
+pData <- dat0[grep("p$", colnames(dat0))]
+
+## Separate demographics and scales:
+scales     <- grepl("_t\\dp", colnames(pData))
+pScaleData <- pData[scales]
+pDemoData  <- pData[!scales]
+
+## How much missing data on demos and scales?
+colMeans(is.na(pDemoData))
+colMeans(is.na(pScaleData))
+```
+
+We have a bit more missing data on the partner scales than partner demographics.
+
+---
+
+What about cases missing all demographics, all scales, or both?
+
+```{r}
+noPDemos  <- rowMeans(is.na(pDemoData)) == 1
+noPScales <- rowMeans(is.na(pScaleData)) == 1
+noPData   <- noPDemos & noPScales
+
+noPDemosF <- factor(noPDemos, 
+                    labels = paste("Partner Demos", c("Observed", "Missing"))
+                    )
+noPScalesF <- factor(noPScales, 
+                     labels = paste("Partner Scales", c("Observed", "Missing"))
+                     )
+noPDataF <- factor(noPData, 
+                   labels = paste("Partner Data", c("Observed", "Missing"))
+                   )
+
+kable(table(noPDemosF, noPScalesF))
+kable(table(pIncl, noPDemosF, useNA = "ifany"))
+kable(table(pIncl, noPScalesF, useNA = "ifany"))
+kable(table(pIncl, noPDataF, useNA = "ifany"))
+```
+
+## Exploring/Fixing Strange Cases
+
+All cases with missing values on `partner_incl` also miss all of their partner 
+data.
+
+- It seems pretty safe to assign all of these cases to the *partner does not 
+participate* group.
+
+```{r}
+dat0$partner_incl[is.na(dat0$partner_incl)] <- "partner does not participate"
+```
+
+There is one case in the *partner does not participate* group who has partner 
+data. What's going on there?
+
+```{r}
+flag <- dat0$partner_incl == "partner does not participate" & !noPData
+sum(flag)
+
+is.na(pData[flag, ])
+```
+
+This person has all partner data, so they should go in the *partner 
+participates* group.
+
+```{r}
+dat0[flag, "partner_incl"] <- "partner participates"
+```
+
+Let's look at those crosstabs again.
+
+```{r, echo = FALSE}
+pIncl <- dat0$partner_incl
+
+t1 <- table(noPDemosF, noPScalesF)
+t2 <- table(pIncl, noPDemosF, useNA = "ifany")
+t3 <- table(pIncl, noPScalesF, useNA = "ifany")
+t4 <- table(pIncl, noPDataF, useNA = "ifany")
+kable(t1)
+kable(t2)
+kable(t3)
+kable(t4)
+```
+
+In the *partner participates* group, there are `r t3[1, 2]` cases with no scale 
+data for partners and `r t4[1, 2]` cases with no partner data, at all.
+
+- Should we move (on set of) these cases to the *partner does not participate* 
+group?
+- I guess that depends on how the participants ended up in the partner groups.
+   - If they were assigned, we shouldn't move anyone (we should to an ITT 
+   analysis).
+   - If they simply reported, it should be safe to move them.
+
+I don't think partner participation was randomly assigned, so let's move these 
+cases, for now.
+
+- Need to confirm this choice with Nancy et al.
+
+```{r}
+dat0[noPData, "partner_incl"] <- "partner does not participate"
+```
+
+```{r, echo = FALSE}
+pIncl <- dat0$partner_incl
+
+t1 <- table(pIncl, noPDemosF, useNA = "ifany")
+t2 <- table(pIncl, noPScalesF, useNA = "ifany")
+t3 <- table(pIncl, noPDataF, useNA = "ifany")
+kable(t1)
+kable(t2)
+kable(t3)
+```
+
+---
+
+# Exploring Patient Scale Data
+
+---
+
+## Missing Data
+
+Let's see if any case is missing all of the patient scale data:
+
+```{r}
+scaleNames <- grep("_t\\d$", colnames(dat0), value = TRUE) %>% 
+  grep("^rel", ., invert = TRUE, value = TRUE)
+
+otherNames <- setdiff(colnames(dat0), 
+                      c("ID_random", scaleNames, colnames(pData))
+                      )
+
+scaleData <- dat0[scaleNames]
+otherData <- dat0[otherNames]
+
+colPm <- colMeans(is.na(scaleData))
+rowPm <- rowMeans(is.na(scaleData))
+
+hist(colPm)
+
+noScales <- rowPm == 1
+sum(noScales)
+mean(noScales)
+```
+
+The variablewise percents missing look pretty good. There are a few variables in 
+the 40% to 50% missing range, but mostly the percents missing are around 25%.
+
+The rowwise picture doesn't look so good, though. There are `r sum(noScales)` 
+cases (`r round(100 * mean(noScales), 1)`%) with no scale data, at all.
+
+## Evaluating Coverage
+
+What kind of data *do* we have for the cases with entirely missing patient scale
+data?
+
+```{r}
+noScalesF <- factor(noScales, 
+                    labels = paste("Patient Scales", c("Observed", "Missing"))
+                    )
+
+t1 <- table(noScalesF)
+t2 <- table(noScalesF, noPScalesF)
+t3 <- table(noScalesF, noPDemosF)
+t4 <- table(noScalesF, noPDataF)
+t5 <- table(noScalesF, pIncl)
+
+kable(t1)
+kable(t2)
+kable(t3)
+kable(t4)
+kable(t5)
+```
+
+Of the `r sum(noScales)` cases missing all patient scale data, `r t2[2, 2]` are 
+also missing partner scale data and `r t3[2, 2]` are missing all partner data.
+
+---
+
+What kind of non-scale data do we have for the cases without patient scale data?
+
+```{r, echo = FALSE, results = "hide"}
+pats <- md.pattern(data.frame(otherData, pDemoData)[noScales, ], 
+                   rotate.names = TRUE)
+```
+
+```{r, echo = FALSE}
+pScales  <- ncol(scaleData)
+pScalesP <- ncol(pScaleData)
+pDemosP  <- ncol(pDemoData)
+pOther   <- ncol(otherData)
+
+pred <- pOther + pDemosP
+
+pImp1 <- pScales + pScalesP + 2
+pImp2 <- pImp1 + pDemosP
+```
+
+- None of these cases have data on the `relation_t3` variable or the 
+`rel_duration_t3` variable. 
+- As seen in the tables above, `r t3[2, 1]` cases have observed partner 
+demographics.
+- The response rates for the non-partner, non-scale variables looks pretty good, 
+but these `r sum(noScales)` cases still face a brutal imputation challenge.
+   - For the `r t3[2, 2]` cases with missing partner demographics, we're talking 
+   about imputing `r pImp2` or `r pImp2 + 1` variables using only the 
+   information in `r pOther - 1` or `r pOther` predictors.
+   - For the `r t3[2, 1]` cases with observed partner demographics, the story 
+   isn't much nicer. We still need to impute `r pImp1` or `r pImp1 + 1` 
+   variables from `r pred - 4` or `r pred` predictors.
+
+---
+
+If we have to exclude the `r t1[2]` cases with completely missing patient scale 
+data, we'll still have `r t1[1]` cases to work with. However, if we also have to 
+exclude the cases with completely missing partner data, we'll only have 
+`r t4[1, 1]` cases.
+
+---
+
+# Wrapping Up
+
+---
+
+Let's add some variables to flag the problematic cases discoverd above.
+- We can try the analysis on reduced samples, if necessary.
+
+```{r}
+dat0$empty_patient_scales <- noScalesF
+dat0$empty_partner_scales <- noPScalesF
+dat0$empty_partner_data   <- noPDataF
+```
+
+*NOTE:* If we switch every case with entirely missing partner data to the 
+*partner does not participate* group, then the `empty_partner_data` variable is 
+perfectly redundant with the `partner_incl` variable.
+
+---
+
+I think we've got the data pretty much ready to go. Let's save the cleaned data.
+
+- We'll do the data synthesis/imputation in another script.
+
+```{r}
+saveRDS(dat0, paste0(dataDir, "cleaned_burn_data.rds"))
+```
+
+---
+
+END

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Kyle M. Lang" />
+
+<meta name="date" content="2021-10-22" />
+
+<title>Prepare Data</title>
+
+<script src="prepData_files/header-attrs-2.11/header-attrs.js"></script>
+<link href="prepData_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="prepData_files/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+/* A workaround for https://github.com/jgm/pandoc/issues/4278 */
+a.sourceLine {
+  pointer-events: auto;
+}
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link rel="stylesheet" href="prepData_files/style.css" type="text/css" />
+
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<header>
+<div class="inner">
+<h1 class="title toc-ignore">Prepare Data</h1>
+<h3 class="author">Kyle M. Lang</h3>
+<h3 class="date">2021-10-22</h3>
+</div>
+</header>
+
+
+<div id="TOC" class="toc">
+<div class="inner">
+<ul>
+<li><a href="#data-ingest">Data Ingest</a></li>
+<li><a href="#general-data-screening">General Data Screening</a>
+<ul>
+<li><a href="#missing-data">Missing Data</a></li>
+</ul></li>
+<li><a href="#exploring-partner-data">Exploring Partner Data</a>
+<ul>
+<li><a href="#partner-flag-variables">Partner Flag Variables</a></li>
+<li><a href="#partner-data">Partner Data</a></li>
+<li><a href="#exploringfixing-strange-cases">Exploring/Fixing Strange Cases</a></li>
+</ul></li>
+<li><a href="#exploring-patient-scale-data">Exploring Patient Scale Data</a>
+<ul>
+<li><a href="#missing-data-1">Missing Data</a></li>
+<li><a href="#evaluating-coverage">Evaluating Coverage</a></li>
+</ul></li>
+<li><a href="#wrapping-up">Wrapping Up</a></li>
+</ul>
+</div>
+</div>
+
+<div id="content-wrapper">
+  <div class="inner clearfix">
+    <section id="main-content">
+<p>In this script, we’ll explore/clean the burn data and prepare them for synthesis/imputation. We’ll do the synthesis/imputation in a separate script.</p>
+<hr />
+<div id="data-ingest" class="section level1">
+<h1>Data Ingest</h1>
+<hr />
+<p>First, we’ll clear the workspace, load necessary packages, and define some global variables.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>(<span class="at">all =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xtable)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>dataDir <span class="ot">&lt;-</span> <span class="st">&quot;../../data/&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>fn      <span class="ot">&lt;-</span> <span class="st">&quot;Social Impact Simulatie Totaal.sav&quot;</span></span></code></pre></div>
+<p>Now, we’ll read in the data.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat0 <span class="ot">&lt;-</span> <span class="fu">read_sav</span>(<span class="fu">paste0</span>(dataDir, fn))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(dat0)</span></code></pre></div>
+<pre><code>## [1] 266 304</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat0)</span></code></pre></div>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ID_random"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["partner"],"name":[2],"type":["dbl+lbl"],"align":["right"]},{"label":["partner_incl"],"name":[3],"type":["dbl+lbl"],"align":["right"]},{"label":["gender"],"name":[4],"type":["dbl+lbl"],"align":["right"]},{"label":["age"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Surgeries"],"name":[6],"type":["dbl+lbl"],"align":["right"]},{"label":["TBSA"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["marital"],"name":[8],"type":["dbl+lbl"],"align":["right"]},{"label":["education"],"name":[9],"type":["dbl+lbl"],"align":["right"]},{"label":["dep_hist"],"name":[10],"type":["dbl+lbl"],"align":["right"]},{"label":["dep_treat"],"name":[11],"type":["dbl+lbl"],"align":["right"]},{"label":["age_p"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["gender_p"],"name":[13],"type":["dbl+lbl"],"align":["right"]},{"label":["education_p"],"name":[14],"type":["dbl+lbl"],"align":["right"]},{"label":["presence_p"],"name":[15],"type":["dbl+lbl"],"align":["right"]},{"label":["relation_t3"],"name":[16],"type":["dbl+lbl"],"align":["right"]},{"label":["rel_duration_t3"],"name":[17],"type":["dbl+lbl"],"align":["right"]},{"label":["IES1_t2"],"name":[18],"type":["dbl+lbl"],"align":["right"]},{"label":["IES2_t2"],"name":[19],"type":["dbl+lbl"],"align":["right"]},{"label":["IES3_t2"],"name":[20],"type":["dbl+lbl"],"align":["right"]},{"label":["IES4_t2"],"name":[21],"type":["dbl+lbl"],"align":["right"]},{"label":["IES5_t2"],"name":[22],"type":["dbl+lbl"],"align":["right"]},{"label":["IES6_t2"],"name":[23],"type":["dbl+lbl"],"align":["right"]},{"label":["IES7_t2"],"name":[24],"type":["dbl+lbl"],"align":["right"]},{"label":["IES8_t2"],"name":[25],"type":["dbl+lbl"],"align":["right"]},{"label":["IES9_t2"],"name":[26],"type":["dbl+lbl"],"align":["right"]},{"label":["IES10_t2"],"name":[27],"type":["dbl+lbl"],"align":["right"]},{"label":["IES11_t2"],"name":[28],"type":["dbl+lbl"],"align":["right"]},{"label":["IES12_t2"],"name":[29],"type":["dbl+lbl"],"align":["right"]},{"label":["IES13_t2"],"name":[30],"type":["dbl+lbl"],"align":["right"]},{"label":["IES14_t2"],"name":[31],"type":["dbl+lbl"],"align":["right"]},{"label":["IES15_t2"],"name":[32],"type":["dbl+lbl"],"align":["right"]},{"label":["IES16_t2"],"name":[33],"type":["dbl+lbl"],"align":["right"]},{"label":["IES17_t2"],"name":[34],"type":["dbl+lbl"],"align":["right"]},{"label":["IES18_t2"],"name":[35],"type":["dbl+lbl"],"align":["right"]},{"label":["IES19_t2"],"name":[36],"type":["dbl+lbl"],"align":["right"]},{"label":["IES20_t2"],"name":[37],"type":["dbl+lbl"],"align":["right"]},{"label":["IES21_t2"],"name":[38],"type":["dbl+lbl"],"align":["right"]},{"label":["IES22_t2"],"name":[39],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI1_t2"],"name":[40],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI2_t2"],"name":[41],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI3_t2"],"name":[42],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI4_t2"],"name":[43],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI5_t2"],"name":[44],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI6_t2"],"name":[45],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI7_t2"],"name":[46],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI8_t2"],"name":[47],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI9_t2"],"name":[48],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI10_t2"],"name":[49],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI11_t2"],"name":[50],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI12_t2"],"name":[51],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI13_t2"],"name":[52],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI14_t2"],"name":[53],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI15_t2"],"name":[54],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI16_t2"],"name":[55],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI17_t2"],"name":[56],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI18_t2"],"name":[57],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI19_t2"],"name":[58],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI20_t2"],"name":[59],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI21_t2"],"name":[60],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS1_t2"],"name":[61],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS2_t2"],"name":[62],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS3_t2"],"name":[63],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS4_t2"],"name":[64],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS5_t2"],"name":[65],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS6_t2"],"name":[66],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS7_t2"],"name":[67],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS8_t2"],"name":[68],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS9_t2"],"name":[69],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS10_t2"],"name":[70],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS11_t2"],"name":[71],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS12_t2"],"name":[72],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS13_t2"],"name":[73],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS14_t2"],"name":[74],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS15_t2"],"name":[75],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ1_t2"],"name":[76],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ2_t2"],"name":[77],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ3_t2"],"name":[78],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ4_t2"],"name":[79],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ5_t2"],"name":[80],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ6_t2"],"name":[81],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ7_t2"],"name":[82],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ8_t2"],"name":[83],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ9_t2"],"name":[84],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ10_t2"],"name":[85],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ11_t2"],"name":[86],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ12_t2"],"name":[87],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ13_t2"],"name":[88],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ14_t2"],"name":[89],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ15_t2"],"name":[90],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ16_t2"],"name":[91],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ17_t2"],"name":[92],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ18_t2"],"name":[93],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ19_t2"],"name":[94],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ20_t2"],"name":[95],"type":["dbl+lbl"],"align":["right"]},{"label":["PSQ21_t2"],"name":[96],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq1_t2"],"name":[97],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq3_t2"],"name":[98],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq5_t2"],"name":[99],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq7_t2"],"name":[100],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR1_t2"],"name":[101],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR2_t2"],"name":[102],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR3_t2"],"name":[103],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR4_t2"],"name":[104],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR5_t2"],"name":[105],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR6_t2"],"name":[106],"type":["dbl+lbl"],"align":["right"]},{"label":["IES1_t3"],"name":[107],"type":["dbl+lbl"],"align":["right"]},{"label":["IES2_t3"],"name":[108],"type":["dbl+lbl"],"align":["right"]},{"label":["IES3_t3"],"name":[109],"type":["dbl+lbl"],"align":["right"]},{"label":["IES4_t3"],"name":[110],"type":["dbl+lbl"],"align":["right"]},{"label":["IES5_t3"],"name":[111],"type":["dbl+lbl"],"align":["right"]},{"label":["IES6_t3"],"name":[112],"type":["dbl+lbl"],"align":["right"]},{"label":["IES7_t3"],"name":[113],"type":["dbl+lbl"],"align":["right"]},{"label":["IES8_t3"],"name":[114],"type":["dbl+lbl"],"align":["right"]},{"label":["IES9_t3"],"name":[115],"type":["dbl+lbl"],"align":["right"]},{"label":["IES10_t3"],"name":[116],"type":["dbl+lbl"],"align":["right"]},{"label":["IES11_t3"],"name":[117],"type":["dbl+lbl"],"align":["right"]},{"label":["IES12_t3"],"name":[118],"type":["dbl+lbl"],"align":["right"]},{"label":["IES13_t3"],"name":[119],"type":["dbl+lbl"],"align":["right"]},{"label":["IES14_t3"],"name":[120],"type":["dbl+lbl"],"align":["right"]},{"label":["IES15_t3"],"name":[121],"type":["dbl+lbl"],"align":["right"]},{"label":["IES16_t3"],"name":[122],"type":["dbl+lbl"],"align":["right"]},{"label":["IES17_t3"],"name":[123],"type":["dbl+lbl"],"align":["right"]},{"label":["IES18_t3"],"name":[124],"type":["dbl+lbl"],"align":["right"]},{"label":["IES19_t3"],"name":[125],"type":["dbl+lbl"],"align":["right"]},{"label":["IES20_t3"],"name":[126],"type":["dbl+lbl"],"align":["right"]},{"label":["IES21_t3"],"name":[127],"type":["dbl+lbl"],"align":["right"]},{"label":["IES22_t3"],"name":[128],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI1_t3"],"name":[129],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI2_t3"],"name":[130],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI3_t3"],"name":[131],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI4_t3"],"name":[132],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI5_t3"],"name":[133],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI6_t3"],"name":[134],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI7_t3"],"name":[135],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI8_t3"],"name":[136],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI9_t3"],"name":[137],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI10_t3"],"name":[138],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI11_t3"],"name":[139],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI12_t3"],"name":[140],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI13_t3"],"name":[141],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI14_t3"],"name":[142],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI15_t3"],"name":[143],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI16_t3"],"name":[144],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI17_t3"],"name":[145],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI18_t3"],"name":[146],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI19_t3"],"name":[147],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI20_t3"],"name":[148],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI21_t3"],"name":[149],"type":["dbl+lbl"],"align":["right"]},{"label":["intim1_t3"],"name":[150],"type":["dbl+lbl"],"align":["right"]},{"label":["intim2_t3"],"name":[151],"type":["dbl+lbl"],"align":["right"]},{"label":["intim3_t3"],"name":[152],"type":["dbl+lbl"],"align":["right"]},{"label":["intim4_t3"],"name":[153],"type":["dbl+lbl"],"align":["right"]},{"label":["intim5_t3"],"name":[154],"type":["dbl+lbl"],"align":["right"]},{"label":["intim6_t3"],"name":[155],"type":["dbl+lbl"],"align":["right"]},{"label":["intim7_t3"],"name":[156],"type":["dbl+lbl"],"align":["right"]},{"label":["intim8_t3"],"name":[157],"type":["dbl+lbl"],"align":["right"]},{"label":["intim9_t3"],"name":[158],"type":["dbl+lbl"],"align":["right"]},{"label":["intim10_t3"],"name":[159],"type":["dbl+lbl"],"align":["right"]},{"label":["intim11_t3"],"name":[160],"type":["dbl+lbl"],"align":["right"]},{"label":["intim12_t3"],"name":[161],"type":["dbl+lbl"],"align":["right"]},{"label":["intim13_t3"],"name":[162],"type":["dbl+lbl"],"align":["right"]},{"label":["intim14_t3"],"name":[163],"type":["dbl+lbl"],"align":["right"]},{"label":["intim15a_t3"],"name":[164],"type":["dbl+lbl"],"align":["right"]},{"label":["intim15b_t3"],"name":[165],"type":["dbl+lbl"],"align":["right"]},{"label":["intim15c_t3"],"name":[166],"type":["dbl+lbl"],"align":["right"]},{"label":["intim16a_t3"],"name":[167],"type":["dbl+lbl"],"align":["right"]},{"label":["intim16b_t3"],"name":[168],"type":["dbl+lbl"],"align":["right"]},{"label":["intim16c_t3"],"name":[169],"type":["dbl+lbl"],"align":["right"]},{"label":["ros1_t3"],"name":[170],"type":["dbl+lbl"],"align":["right"]},{"label":["ros2_t3"],"name":[171],"type":["dbl+lbl"],"align":["right"]},{"label":["ros3_t3"],"name":[172],"type":["dbl+lbl"],"align":["right"]},{"label":["ros4_t3"],"name":[173],"type":["dbl+lbl"],"align":["right"]},{"label":["ros5_t3"],"name":[174],"type":["dbl+lbl"],"align":["right"]},{"label":["ros6_t3"],"name":[175],"type":["dbl+lbl"],"align":["right"]},{"label":["ros7_t3"],"name":[176],"type":["dbl+lbl"],"align":["right"]},{"label":["ros8_t3"],"name":[177],"type":["dbl+lbl"],"align":["right"]},{"label":["ros9_t3"],"name":[178],"type":["dbl+lbl"],"align":["right"]},{"label":["ros10_t3"],"name":[179],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP1_t3"],"name":[180],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP2_t3"],"name":[181],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP3_t3"],"name":[182],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP4_t3"],"name":[183],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP5_t3"],"name":[184],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP6_t3"],"name":[185],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP7_t3"],"name":[186],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP8_t3"],"name":[187],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP9_t3"],"name":[188],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP10_t3"],"name":[189],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP11_t3"],"name":[190],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP12_t3"],"name":[191],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP13_t3"],"name":[192],"type":["dbl+lbl"],"align":["right"]},{"label":["SWAP14_t3"],"name":[193],"type":["dbl+lbl"],"align":["right"]},{"label":["IES1_t2p"],"name":[194],"type":["dbl+lbl"],"align":["right"]},{"label":["IES2_t2p"],"name":[195],"type":["dbl+lbl"],"align":["right"]},{"label":["IES3_t2p"],"name":[196],"type":["dbl+lbl"],"align":["right"]},{"label":["IES4_t2p"],"name":[197],"type":["dbl+lbl"],"align":["right"]},{"label":["IES5_t2p"],"name":[198],"type":["dbl+lbl"],"align":["right"]},{"label":["IES6_t2p"],"name":[199],"type":["dbl+lbl"],"align":["right"]},{"label":["IES7_t2p"],"name":[200],"type":["dbl+lbl"],"align":["right"]},{"label":["IES8_t2p"],"name":[201],"type":["dbl+lbl"],"align":["right"]},{"label":["IES9_t2p"],"name":[202],"type":["dbl+lbl"],"align":["right"]},{"label":["IES10_t2p"],"name":[203],"type":["dbl+lbl"],"align":["right"]},{"label":["IES11_t2p"],"name":[204],"type":["dbl+lbl"],"align":["right"]},{"label":["IES12_t2p"],"name":[205],"type":["dbl+lbl"],"align":["right"]},{"label":["IES13_t2p"],"name":[206],"type":["dbl+lbl"],"align":["right"]},{"label":["IES14_t2p"],"name":[207],"type":["dbl+lbl"],"align":["right"]},{"label":["IES15_t2p"],"name":[208],"type":["dbl+lbl"],"align":["right"]},{"label":["IES16_t2p"],"name":[209],"type":["dbl+lbl"],"align":["right"]},{"label":["IES17_t2p"],"name":[210],"type":["dbl+lbl"],"align":["right"]},{"label":["IES18_t2p"],"name":[211],"type":["dbl+lbl"],"align":["right"]},{"label":["IES19_t2p"],"name":[212],"type":["dbl+lbl"],"align":["right"]},{"label":["IES20_t2p"],"name":[213],"type":["dbl+lbl"],"align":["right"]},{"label":["IES21_t2p"],"name":[214],"type":["dbl+lbl"],"align":["right"]},{"label":["IES22_t2p"],"name":[215],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI1_t2p"],"name":[216],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI2_t2p"],"name":[217],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI3_t2p"],"name":[218],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI4_t2p"],"name":[219],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI5_t2p"],"name":[220],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI6_t2p"],"name":[221],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI7_t2p"],"name":[222],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI8_t2p"],"name":[223],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI9_t2p"],"name":[224],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI10_t2p"],"name":[225],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI11_t2p"],"name":[226],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI12_t2p"],"name":[227],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI13_t2p"],"name":[228],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI14_t2p"],"name":[229],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI15_t2p"],"name":[230],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI16_t2p"],"name":[231],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI17_t2p"],"name":[232],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI18_t2p"],"name":[233],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI19_t2p"],"name":[234],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI20_t2p"],"name":[235],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI21_t2p"],"name":[236],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq1_t2p"],"name":[237],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq3_t2p"],"name":[238],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq5_t2p"],"name":[239],"type":["dbl+lbl"],"align":["right"]},{"label":["cerq7_t2p"],"name":[240],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS1_t2p"],"name":[241],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS2_t2p"],"name":[242],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS3_t2p"],"name":[243],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS4_t2p"],"name":[244],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS5_t2p"],"name":[245],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS6_t2p"],"name":[246],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS7_t2p"],"name":[247],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS8_t2p"],"name":[248],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS9_t2p"],"name":[249],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS10_t2p"],"name":[250],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS11_t2p"],"name":[251],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS12_t2p"],"name":[252],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS13_t2p"],"name":[253],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS14_t2p"],"name":[254],"type":["dbl+lbl"],"align":["right"]},{"label":["GRS15_t2p"],"name":[255],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR1_t2p"],"name":[256],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR2_t2p"],"name":[257],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR3_t2p"],"name":[258],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR4_t2p"],"name":[259],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR5_t2p"],"name":[260],"type":["dbl+lbl"],"align":["right"]},{"label":["POSR6_t2p"],"name":[261],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI1_t3p"],"name":[262],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI2_t3p"],"name":[263],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI3_t3p"],"name":[264],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI4_t3p"],"name":[265],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI5_t3p"],"name":[266],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI6_t3p"],"name":[267],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI7_t3p"],"name":[268],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI8_t3p"],"name":[269],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI9_t3p"],"name":[270],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI10_t3p"],"name":[271],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI11_t3p"],"name":[272],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI12_t3p"],"name":[273],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI13_t3p"],"name":[274],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI14_t3p"],"name":[275],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI15_t3p"],"name":[276],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI16_t3p"],"name":[277],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI17_t3p"],"name":[278],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI18_t3p"],"name":[279],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI19_t3p"],"name":[280],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI20_t3p"],"name":[281],"type":["dbl+lbl"],"align":["right"]},{"label":["BDI21_t3p"],"name":[282],"type":["dbl+lbl"],"align":["right"]},{"label":["IES1_t3p"],"name":[283],"type":["dbl+lbl"],"align":["right"]},{"label":["IES2_t3p"],"name":[284],"type":["dbl+lbl"],"align":["right"]},{"label":["IES3_t3p"],"name":[285],"type":["dbl+lbl"],"align":["right"]},{"label":["IES4_t3p"],"name":[286],"type":["dbl+lbl"],"align":["right"]},{"label":["IES5_t3p"],"name":[287],"type":["dbl+lbl"],"align":["right"]},{"label":["IES6_t3p"],"name":[288],"type":["dbl+lbl"],"align":["right"]},{"label":["IES7_t3p"],"name":[289],"type":["dbl+lbl"],"align":["right"]},{"label":["IES8_t3p"],"name":[290],"type":["dbl+lbl"],"align":["right"]},{"label":["IES9_t3p"],"name":[291],"type":["dbl+lbl"],"align":["right"]},{"label":["IES10_t3p"],"name":[292],"type":["dbl+lbl"],"align":["right"]},{"label":["IES11_t3p"],"name":[293],"type":["dbl+lbl"],"align":["right"]},{"label":["IES12_t3p"],"name":[294],"type":["dbl+lbl"],"align":["right"]},{"label":["IES13_t3p"],"name":[295],"type":["dbl+lbl"],"align":["right"]},{"label":["IES14_t3p"],"name":[296],"type":["dbl+lbl"],"align":["right"]},{"label":["IES15_t3p"],"name":[297],"type":["dbl+lbl"],"align":["right"]},{"label":["IES16_t3p"],"name":[298],"type":["dbl+lbl"],"align":["right"]},{"label":["IES17_t3p"],"name":[299],"type":["dbl+lbl"],"align":["right"]},{"label":["IES18_t3p"],"name":[300],"type":["dbl+lbl"],"align":["right"]},{"label":["IES19_t3p"],"name":[301],"type":["dbl+lbl"],"align":["right"]},{"label":["IES20_t3p"],"name":[302],"type":["dbl+lbl"],"align":["right"]},{"label":["IES21_t3p"],"name":[303],"type":["dbl+lbl"],"align":["right"]},{"label":["IES22_t3p"],"name":[304],"type":["dbl+lbl"],"align":["right"]}],"data":[{"1":"1","2":"2","3":"1","4":"1","5":"42","6":"1","7":"13.0","8":"3","9":"4","10":"2","11":"2","12":"43","13":"2","14":"3","15":"2","16":"1","17":"4","18":"0","19":"2","20":"0","21":"1","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"0","38":"0","39":"0","40":"0","41":"1","42":"0","43":"1","44":"0","45":"0","46":"1","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"1","55":"1","56":"1","57":"1","58":"0","59":"1","60":"0","61":"4","62":"3","63":"1","64":"2","65":"1","66":"3","67":"1","68":"2","69":"1","70":"2","71":"1","72":"1","73":"3","74":"1","75":"2","76":"5","77":"1","78":"1","79":"1","80":"5","81":"2","82":"4","83":"1","84":"5","85":"3","86":"1","87":"4","88":"1","89":"3","90":"5","91":"1","92":"1","93":"1","94":"2","95":"1","96":"1","97":"3","98":"2","99":"2","100":"1","101":"2","102":"2","103":"1","104":"2","105":"2","106":"2","107":"1","108":"0","109":"1","110":"1","111":"1","112":"0","113":"0","114":"0","115":"0","116":"0","117":"0","118":"1","119":"0","120":"0","121":"0","122":"0","123":"0","124":"0","125":"1","126":"0","127":"2","128":"0","129":"0","130":"0","131":"0","132":"1","133":"0","134":"0","135":"0","136":"1","137":"0","138":"0","139":"1","140":"1","141":"0","142":"0","143":"1","144":"1","145":"1","146":"0","147":"0","148":"1","149":"0","150":"1","151":"1","152":"3","153":"2","154":"1","155":"3","156":"4","157":"3","158":"4","159":"4","160":"2","161":"NA","162":"4","163":"4","164":"3","165":"4","166":"2","167":"3","168":"3","169":"4","170":"2","171":"3","172":"2","173":"2","174":"3","175":"3","176":"2","177":"3","178":"3","179":"2","180":"2","181":"2","182":"2","183":"4","184":"4","185":"6","186":"6","187":"2","188":"2","189":"4","190":"6","191":"2","192":"2","193":"2","194":"3","195":"1","196":"3","197":"1","198":"2","199":"2","200":"0","201":"3","202":"1","203":"2","204":"1","205":"2","206":"1","207":"0","208":"1","209":"2","210":"0","211":"1","212":"1","213":"0","214":"4","215":"3","216":"1","217":"1","218":"0","219":"1","220":"0","221":"1","222":"0","223":"0","224":"0","225":"1","226":"1","227":"1","228":"1","229":"0","230":"1","231":"1","232":"0","233":"0","234":"1","235":"1","236":"0","237":"3","238":"3","239":"3","240":"3","241":"5","242":"2","243":"2","244":"5","245":"3","246":"2","247":"2","248":"5","249":"4","250":"5","251":"4","252":"4","253":"3","254":"3","255":"4","256":"2","257":"4","258":"3","259":"2","260":"5","261":"4","262":"1","263":"1","264":"0","265":"1","266":"0","267":"1","268":"1","269":"0","270":"0","271":"1","272":"1","273":"1","274":"1","275":"0","276":"1","277":"1","278":"1","279":"0","280":"1","281":"1","282":"0","283":"2","284":"1","285":"2","286":"1","287":"2","288":"2","289":"1","290":"3","291":"2","292":"2","293":"3","294":"2","295":"2","296":"1","297":"1","298":"3","299":"2","300":"1","301":"1","302":"0","303":"3","304":"3"},{"1":"2","2":"2","3":"1","4":"1","5":"47","6":"0","7":"3.5","8":"2","9":"2","10":"2","11":"2","12":"45","13":"2","14":"3","15":"2","16":"1","17":"4","18":"0","19":"0","20":"1","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"0","38":"1","39":"0","40":"0","41":"0","42":"0","43":"0","44":"0","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"0","59":"0","60":"0","61":"2","62":"1","63":"1","64":"1","65":"1","66":"1","67":"1","68":"1","69":"1","70":"1","71":"1","72":"1","73":"1","74":"1","75":"1","76":"5","77":"1","78":"1","79":"1","80":"5","81":"1","82":"1","83":"1","84":"5","85":"1","86":"1","87":"3","88":"1","89":"1","90":"5","91":"1","92":"5","93":"1","94":"1","95":"4","96":"1","97":"1","98":"1","99":"1","100":"1","101":"1","102":"2","103":"1","104":"5","105":"5","106":"5","107":"0","108":"0","109":"0","110":"0","111":"0","112":"0","113":"0","114":"0","115":"0","116":"0","117":"0","118":"0","119":"0","120":"0","121":"0","122":"0","123":"0","124":"0","125":"0","126":"0","127":"1","128":"0","129":"0","130":"0","131":"0","132":"0","133":"0","134":"0","135":"0","136":"0","137":"0","138":"0","139":"0","140":"0","141":"0","142":"0","143":"0","144":"0","145":"0","146":"0","147":"0","148":"0","149":"0","150":"1","151":"1","152":"1","153":"1","154":"1","155":"5","156":"5","157":"5","158":"5","159":"5","160":"1","161":"5","162":"5","163":"5","164":"1","165":"5","166":"3","167":"4","168":"4","169":"1","170":"1","171":"4","172":"1","173":"1","174":"4","175":"4","176":"1","177":"4","178":"4","179":"1","180":"1","181":"1","182":"1","183":"7","184":"7","185":"7","186":"7","187":"7","188":"7","189":"7","190":"7","191":"1","192":"1","193":"7","194":"1","195":"0","196":"0","197":"1","198":"0","199":"1","200":"0","201":"0","202":"0","203":"0","204":"0","205":"0","206":"0","207":"0","208":"0","209":"0","210":"0","211":"1","212":"0","213":"0","214":"0","215":"0","216":"0","217":"0","218":"0","219":"0","220":"0","221":"0","222":"0","223":"0","224":"0","225":"1","226":"1","227":"1","228":"0","229":"0","230":"1","231":"0","232":"1","233":"1","234":"1","235":"0","236":"0","237":"2","238":"1","239":"1","240":"2","241":"2","242":"2","243":"1","244":"1","245":"1","246":"2","247":"2","248":"1","249":"1","250":"1","251":"1","252":"1","253":"2","254":"1","255":"1","256":"1","257":"2","258":"1","259":"2","260":"2","261":"3","262":"0","263":"1","264":"0","265":"1","266":"0","267":"0","268":"1","269":"0","270":"0","271":"1","272":"1","273":"1","274":"1","275":"0","276":"1","277":"0","278":"1","279":"1","280":"1","281":"0","282":"1","283":"0","284":"0","285":"0","286":"1","287":"0","288":"0","289":"0","290":"0","291":"0","292":"0","293":"0","294":"0","295":"0","296":"0","297":"0","298":"0","299":"0","300":"1","301":"0","302":"0","303":"0","304":"0"},{"1":"3","2":"2","3":"1","4":"1","5":"51","6":"1","7":"6.5","8":"2","9":"2","10":"1","11":"1","12":"46","13":"2","14":"2","15":"1","16":"1","17":"3","18":"1","19":"1","20":"1","21":"1","22":"1","23":"1","24":"0","25":"1","26":"1","27":"0","28":"1","29":"0","30":"0","31":"0","32":"1","33":"0","34":"1","35":"0","36":"0","37":"0","38":"1","39":"0","40":"0","41":"0","42":"0","43":"1","44":"0","45":"0","46":"0","47":"0","48":"0","49":"0","50":"1","51":"1","52":"0","53":"0","54":"2","55":"2","56":"1","57":"0","58":"1","59":"2","60":"1","61":"2","62":"1","63":"1","64":"2","65":"1","66":"1","67":"3","68":"1","69":"1","70":"1","71":"1","72":"1","73":"2","74":"1","75":"2","76":"4","77":"1","78":"1","79":"2","80":"4","81":"1","82":"4","83":"1","84":"4","85":"2","86":"1","87":"4","88":"1","89":"1","90":"4","91":"1","92":"4","93":"1","94":"2","95":"4","96":"1","97":"2","98":"1","99":"1","100":"1","101":"1","102":"2","103":"2","104":"1","105":"2","106":"4","107":"1","108":"1","109":"0","110":"1","111":"0","112":"0","113":"1","114":"0","115":"0","116":"1","117":"0","118":"0","119":"0","120":"0","121":"1","122":"0","123":"0","124":"1","125":"0","126":"0","127":"1","128":"0","129":"0","130":"0","131":"0","132":"0","133":"0","134":"0","135":"0","136":"0","137":"0","138":"0","139":"0","140":"0","141":"0","142":"0","143":"1","144":"2","145":"0","146":"0","147":"1","148":"1","149":"0","150":"1","151":"1","152":"1","153":"1","154":"1","155":"5","156":"5","157":"5","158":"5","159":"5","160":"1","161":"5","162":"5","163":"5","164":"4","165":"4","166":"2","167":"4","168":"4","169":"2","170":"1","171":"4","172":"1","173":"1","174":"4","175":"4","176":"1","177":"4","178":"4","179":"1","180":"2","181":"2","182":"2","183":"6","184":"6","185":"6","186":"6","187":"6","188":"6","189":"6","190":"6","191":"2","192":"2","193":"3","194":"1","195":"1","196":"2","197":"1","198":"1","199":"1","200":"0","201":"1","202":"1","203":"0","204":"1","205":"1","206":"0","207":"0","208":"0","209":"0","210":"1","211":"0","212":"0","213":"1","214":"2","215":"1","216":"0","217":"1","218":"0","219":"0","220":"0","221":"0","222":"0","223":"0","224":"0","225":"0","226":"1","227":"0","228":"0","229":"0","230":"0","231":"1","232":"0","233":"0","234":"0","235":"0","236":"2","237":"3","238":"1","239":"1","240":"1","241":"4","242":"2","243":"1","244":"1","245":"1","246":"1","247":"1","248":"1","249":"1","250":"2","251":"1","252":"1","253":"2","254":"1","255":"5","256":"2","257":"4","258":"4","259":"1","260":"2","261":"2","262":"0","263":"1","264":"0","265":"0","266":"0","267":"0","268":"0","269":"0","270":"0","271":"0","272":"0","273":"0","274":"0","275":"0","276":"0","277":"0","278":"0","279":"0","280":"0","281":"0","282":"1","283":"1","284":"1","285":"2","286":"0","287":"2","288":"1","289":"0","290":"1","291":"2","292":"1","293":"2","294":"2","295":"0","296":"1","297":"0","298":"1","299":"2","300":"0","301":"0","302":"0","303":"0","304":"2"},{"1":"4","2":"1","3":"NA","4":"1","5":"28","6":"0","7":"2.0","8":"1","9":"3","10":"2","11":"2","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"0","19":"0","20":"1","21":"0","22":"3","23":"0","24":"2","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"0","38":"0","39":"0","40":"0","41":"0","42":"0","43":"0","44":"0","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"0","59":"0","60":"0","61":"2","62":"1","63":"1","64":"1","65":"1","66":"1","67":"1","68":"1","69":"1","70":"1","71":"1","72":"1","73":"1","74":"1","75":"1","76":"4","77":"1","78":"1","79":"2","80":"4","81":"1","82":"3","83":"1","84":"4","85":"2","86":"1","87":"4","88":"1","89":"1","90":"4","91":"1","92":"1","93":"1","94":"1","95":"1","96":"1","97":"1","98":"1","99":"1","100":"1","101":"1","102":"1","103":"1","104":"3","105":"4","106":"5","107":"NA","108":"NA","109":"NA","110":"NA","111":"NA","112":"NA","113":"NA","114":"NA","115":"NA","116":"NA","117":"NA","118":"NA","119":"NA","120":"NA","121":"NA","122":"NA","123":"NA","124":"NA","125":"NA","126":"NA","127":"NA","128":"NA","129":"NA","130":"NA","131":"NA","132":"NA","133":"NA","134":"NA","135":"NA","136":"NA","137":"NA","138":"NA","139":"NA","140":"NA","141":"NA","142":"NA","143":"NA","144":"NA","145":"NA","146":"NA","147":"NA","148":"NA","149":"NA","150":"NA","151":"NA","152":"NA","153":"NA","154":"NA","155":"NA","156":"NA","157":"NA","158":"NA","159":"NA","160":"NA","161":"NA","162":"NA","163":"NA","164":"NA","165":"NA","166":"NA","167":"NA","168":"NA","169":"NA","170":"NA","171":"NA","172":"NA","173":"NA","174":"NA","175":"NA","176":"NA","177":"NA","178":"NA","179":"NA","180":"NA","181":"NA","182":"NA","183":"NA","184":"NA","185":"NA","186":"NA","187":"NA","188":"NA","189":"NA","190":"NA","191":"NA","192":"NA","193":"NA","194":"NA","195":"NA","196":"NA","197":"NA","198":"NA","199":"NA","200":"NA","201":"NA","202":"NA","203":"NA","204":"NA","205":"NA","206":"NA","207":"NA","208":"NA","209":"NA","210":"NA","211":"NA","212":"NA","213":"NA","214":"NA","215":"NA","216":"NA","217":"NA","218":"NA","219":"NA","220":"NA","221":"NA","222":"NA","223":"NA","224":"NA","225":"NA","226":"NA","227":"NA","228":"NA","229":"NA","230":"NA","231":"NA","232":"NA","233":"NA","234":"NA","235":"NA","236":"NA","237":"NA","238":"NA","239":"NA","240":"NA","241":"NA","242":"NA","243":"NA","244":"NA","245":"NA","246":"NA","247":"NA","248":"NA","249":"NA","250":"NA","251":"NA","252":"NA","253":"NA","254":"NA","255":"NA","256":"NA","257":"NA","258":"NA","259":"NA","260":"NA","261":"NA","262":"NA","263":"NA","264":"NA","265":"NA","266":"NA","267":"NA","268":"NA","269":"NA","270":"NA","271":"NA","272":"NA","273":"NA","274":"NA","275":"NA","276":"NA","277":"NA","278":"NA","279":"NA","280":"NA","281":"NA","282":"NA","283":"NA","284":"NA","285":"NA","286":"NA","287":"NA","288":"NA","289":"NA","290":"NA","291":"NA","292":"NA","293":"NA","294":"NA","295":"NA","296":"NA","297":"NA","298":"NA","299":"NA","300":"NA","301":"NA","302":"NA","303":"NA","304":"NA"},{"1":"5","2":"2","3":"1","4":"1","5":"57","6":"0","7":"7.0","8":"2","9":"2","10":"2","11":"2","12":"57","13":"2","14":"3","15":"2","16":"NA","17":"NA","18":"1","19":"0","20":"0","21":"0","22":"0","23":"1","24":"0","25":"0","26":"1","27":"0","28":"2","29":"1","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"0","38":"0","39":"0","40":"0","41":"0","42":"0","43":"0","44":"0","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"0","59":"1","60":"0","61":"1","62":"2","63":"5","64":"2","65":"1","66":"1","67":"1","68":"1","69":"1","70":"1","71":"1","72":"1","73":"1","74":"1","75":"1","76":"5","77":"1","78":"1","79":"1","80":"5","81":"1","82":"5","83":"5","84":"5","85":"1","86":"1","87":"5","88":"1","89":"1","90":"5","91":"1","92":"5","93":"1","94":"1","95":"5","96":"1","97":"2","98":"1","99":"1","100":"1","101":"1","102":"1","103":"1","104":"2","105":"3","106":"3","107":"0","108":"0","109":"0","110":"0","111":"0","112":"0","113":"2","114":"0","115":"0","116":"0","117":"0","118":"1","119":"0","120":"0","121":"0","122":"0","123":"0","124":"0","125":"0","126":"0","127":"1","128":"0","129":"0","130":"0","131":"0","132":"0","133":"0","134":"0","135":"0","136":"0","137":"0","138":"0","139":"0","140":"0","141":"0","142":"0","143":"0","144":"0","145":"0","146":"0","147":"0","148":"0","149":"0","150":"NA","151":"NA","152":"NA","153":"NA","154":"NA","155":"NA","156":"NA","157":"NA","158":"NA","159":"NA","160":"NA","161":"NA","162":"NA","163":"NA","164":"NA","165":"NA","166":"NA","167":"NA","168":"NA","169":"NA","170":"1","171":"4","172":"1","173":"1","174":"4","175":"4","176":"1","177":"4","178":"4","179":"1","180":"1","181":"1","182":"1","183":"3","184":"4","185":"4","186":"4","187":"4","188":"4","189":"2","190":"4","191":"1","192":"4","193":"4","194":"2","195":"1","196":"1","197":"0","198":"3","199":"2","200":"0","201":"0","202":"0","203":"0","204":"0","205":"0","206":"0","207":"0","208":"1","209":"1","210":"0","211":"1","212":"0","213":"0","214":"0","215":"0","216":"0","217":"0","218":"0","219":"0","220":"0","221":"0","222":"0","223":"0","224":"0","225":"0","226":"0","227":"0","228":"0","229":"0","230":"0","231":"0","232":"0","233":"0","234":"0","235":"0","236":"0","237":"2","238":"2","239":"1","240":"1","241":"2","242":"1","243":"1","244":"1","245":"1","246":"1","247":"1","248":"1","249":"1","250":"1","251":"1","252":"1","253":"1","254":"1","255":"1","256":"2","257":"3","258":"2","259":"2","260":"3","261":"3","262":"0","263":"0","264":"0","265":"0","266":"0","267":"0","268":"0","269":"0","270":"0","271":"0","272":"0","273":"0","274":"0","275":"0","276":"0","277":"0","278":"0","279":"0","280":"0","281":"0","282":"0","283":"0","284":"0","285":"0","286":"0","287":"0","288":"0","289":"0","290":"0","291":"0","292":"0","293":"0","294":"0","295":"0","296":"0","297":"0","298":"0","299":"0","300":"0","301":"0","302":"0","303":"0","304":"0"},{"1":"6","2":"2","3":"1","4":"2","5":"51","6":"0","7":"2.6","8":"2","9":"2","10":"2","11":"2","12":"54","13":"1","14":"3","15":"1","16":"NA","17":"NA","18":"0","19":"0","20":"0","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"0","38":"0","39":"0","40":"0","41":"0","42":"0","43":"0","44":"0","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"0","59":"0","60":"0","61":"1","62":"1","63":"1","64":"1","65":"1","66":"1","67":"1","68":"1","69":"1","70":"1","71":"1","72":"1","73":"1","74":"1","75":"1","76":"5","77":"1","78":"1","79":"1","80":"4","81":"1","82":"3","83":"1","84":"5","85":"1","86":"1","87":"4","88":"1","89":"1","90":"4","91":"1","92":"4","93":"1","94":"1","95":"4","96":"1","97":"1","98":"1","99":"1","100":"1","101":"1","102":"1","103":"1","104":"1","105":"5","106":"5","107":"NA","108":"NA","109":"NA","110":"NA","111":"NA","112":"NA","113":"NA","114":"NA","115":"NA","116":"NA","117":"NA","118":"NA","119":"NA","120":"NA","121":"NA","122":"NA","123":"NA","124":"NA","125":"NA","126":"NA","127":"NA","128":"NA","129":"NA","130":"NA","131":"NA","132":"NA","133":"NA","134":"NA","135":"NA","136":"NA","137":"NA","138":"NA","139":"NA","140":"NA","141":"NA","142":"NA","143":"NA","144":"NA","145":"NA","146":"NA","147":"NA","148":"NA","149":"NA","150":"NA","151":"NA","152":"NA","153":"NA","154":"NA","155":"NA","156":"NA","157":"NA","158":"NA","159":"NA","160":"NA","161":"NA","162":"NA","163":"NA","164":"NA","165":"NA","166":"NA","167":"NA","168":"NA","169":"NA","170":"NA","171":"NA","172":"NA","173":"NA","174":"NA","175":"NA","176":"NA","177":"NA","178":"NA","179":"NA","180":"NA","181":"NA","182":"NA","183":"NA","184":"NA","185":"NA","186":"NA","187":"NA","188":"NA","189":"NA","190":"NA","191":"NA","192":"NA","193":"NA","194":"0","195":"0","196":"0","197":"0","198":"0","199":"0","200":"0","201":"0","202":"0","203":"0","204":"0","205":"0","206":"0","207":"0","208":"0","209":"0","210":"0","211":"0","212":"0","213":"0","214":"0","215":"0","216":"0","217":"0","218":"0","219":"0","220":"0","221":"0","222":"0","223":"0","224":"0","225":"0","226":"0","227":"0","228":"0","229":"0","230":"0","231":"0","232":"0","233":"0","234":"0","235":"0","236":"0","237":"1","238":"1","239":"1","240":"1","241":"1","242":"1","243":"1","244":"1","245":"1","246":"1","247":"1","248":"1","249":"1","250":"1","251":"1","252":"1","253":"1","254":"1","255":"1","256":"1","257":"1","258":"1","259":"1","260":"3","261":"3","262":"NA","263":"NA","264":"NA","265":"NA","266":"NA","267":"NA","268":"NA","269":"NA","270":"NA","271":"NA","272":"NA","273":"NA","274":"NA","275":"NA","276":"NA","277":"NA","278":"NA","279":"NA","280":"NA","281":"NA","282":"NA","283":"NA","284":"NA","285":"NA","286":"NA","287":"NA","288":"NA","289":"NA","290":"NA","291":"NA","292":"NA","293":"NA","294":"NA","295":"NA","296":"NA","297":"NA","298":"NA","299":"NA","300":"NA","301":"NA","302":"NA","303":"NA","304":"NA"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>That looks to have been successful. Let’s explore the data.</p>
+<hr />
+</div>
+<div id="general-data-screening" class="section level1">
+<h1>General Data Screening</h1>
+<hr />
+<p>First, we’ll check the classes of each column.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(dat0, <span class="cf">function</span>(x) { </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  tmp <span class="ot">&lt;-</span> <span class="fu">class</span>(x)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  tmp[<span class="fu">length</span>(tmp)] </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>##       ID_random         partner    partner_incl          gender             age 
+##       &quot;numeric&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;       &quot;numeric&quot; 
+##       Surgeries            TBSA         marital       education        dep_hist 
+##        &quot;double&quot;       &quot;numeric&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       dep_treat           age_p        gender_p     education_p      presence_p 
+##        &quot;double&quot;       &quot;numeric&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##     relation_t3 rel_duration_t3         IES1_t2         IES2_t2         IES3_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         IES4_t2         IES5_t2         IES6_t2         IES7_t2         IES8_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         IES9_t2        IES10_t2        IES11_t2        IES12_t2        IES13_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES14_t2        IES15_t2        IES16_t2        IES17_t2        IES18_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES19_t2        IES20_t2        IES21_t2        IES22_t2         BDI1_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         BDI2_t2         BDI3_t2         BDI4_t2         BDI5_t2         BDI6_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         BDI7_t2         BDI8_t2         BDI9_t2        BDI10_t2        BDI11_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI12_t2        BDI13_t2        BDI14_t2        BDI15_t2        BDI16_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI17_t2        BDI18_t2        BDI19_t2        BDI20_t2        BDI21_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         GRS1_t2         GRS2_t2         GRS3_t2         GRS4_t2         GRS5_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         GRS6_t2         GRS7_t2         GRS8_t2         GRS9_t2        GRS10_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        GRS11_t2        GRS12_t2        GRS13_t2        GRS14_t2        GRS15_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         PSQ1_t2         PSQ2_t2         PSQ3_t2         PSQ4_t2         PSQ5_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         PSQ6_t2         PSQ7_t2         PSQ8_t2         PSQ9_t2        PSQ10_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        PSQ11_t2        PSQ12_t2        PSQ13_t2        PSQ14_t2        PSQ15_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        PSQ16_t2        PSQ17_t2        PSQ18_t2        PSQ19_t2        PSQ20_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        PSQ21_t2        cerq1_t2        cerq3_t2        cerq5_t2        cerq7_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        POSR1_t2        POSR2_t2        POSR3_t2        POSR4_t2        POSR5_t2 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        POSR6_t2         IES1_t3         IES2_t3         IES3_t3         IES4_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         IES5_t3         IES6_t3         IES7_t3         IES8_t3         IES9_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES10_t3        IES11_t3        IES12_t3        IES13_t3        IES14_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES15_t3        IES16_t3        IES17_t3        IES18_t3        IES19_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES20_t3        IES21_t3        IES22_t3         BDI1_t3         BDI2_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         BDI3_t3         BDI4_t3         BDI5_t3         BDI6_t3         BDI7_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         BDI8_t3         BDI9_t3        BDI10_t3        BDI11_t3        BDI12_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI13_t3        BDI14_t3        BDI15_t3        BDI16_t3        BDI17_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI18_t3        BDI19_t3        BDI20_t3        BDI21_t3       intim1_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       intim2_t3       intim3_t3       intim4_t3       intim5_t3       intim6_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       intim7_t3       intim8_t3       intim9_t3      intim10_t3      intim11_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##      intim12_t3      intim13_t3      intim14_t3     intim15a_t3     intim15b_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##     intim15c_t3     intim16a_t3     intim16b_t3     intim16c_t3         ros1_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         ros2_t3         ros3_t3         ros4_t3         ros5_t3         ros6_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##         ros7_t3         ros8_t3         ros9_t3        ros10_t3        SWAP1_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        SWAP2_t3        SWAP3_t3        SWAP4_t3        SWAP5_t3        SWAP6_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        SWAP7_t3        SWAP8_t3        SWAP9_t3       SWAP10_t3       SWAP11_t3 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       SWAP12_t3       SWAP13_t3       SWAP14_t3        IES1_t2p        IES2_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES3_t2p        IES4_t2p        IES5_t2p        IES6_t2p        IES7_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES8_t2p        IES9_t2p       IES10_t2p       IES11_t2p       IES12_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       IES13_t2p       IES14_t2p       IES15_t2p       IES16_t2p       IES17_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       IES18_t2p       IES19_t2p       IES20_t2p       IES21_t2p       IES22_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI1_t2p        BDI2_t2p        BDI3_t2p        BDI4_t2p        BDI5_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI6_t2p        BDI7_t2p        BDI8_t2p        BDI9_t2p       BDI10_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI11_t2p       BDI12_t2p       BDI13_t2p       BDI14_t2p       BDI15_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI16_t2p       BDI17_t2p       BDI18_t2p       BDI19_t2p       BDI20_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI21_t2p       cerq1_t2p       cerq3_t2p       cerq5_t2p       cerq7_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        GRS1_t2p        GRS2_t2p        GRS3_t2p        GRS4_t2p        GRS5_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        GRS6_t2p        GRS7_t2p        GRS8_t2p        GRS9_t2p       GRS10_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       GRS11_t2p       GRS12_t2p       GRS13_t2p       GRS14_t2p       GRS15_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       POSR1_t2p       POSR2_t2p       POSR3_t2p       POSR4_t2p       POSR5_t2p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       POSR6_t2p        BDI1_t3p        BDI2_t3p        BDI3_t3p        BDI4_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        BDI5_t3p        BDI6_t3p        BDI7_t3p        BDI8_t3p        BDI9_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI10_t3p       BDI11_t3p       BDI12_t3p       BDI13_t3p       BDI14_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI15_t3p       BDI16_t3p       BDI17_t3p       BDI18_t3p       BDI19_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       BDI20_t3p       BDI21_t3p        IES1_t3p        IES2_t3p        IES3_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES4_t3p        IES5_t3p        IES6_t3p        IES7_t3p        IES8_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##        IES9_t3p       IES10_t3p       IES11_t3p       IES12_t3p       IES13_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       IES14_t3p       IES15_t3p       IES16_t3p       IES17_t3p       IES18_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot; 
+##       IES19_t3p       IES20_t3p       IES21_t3p       IES22_t3p 
+##        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;        &quot;double&quot;</code></pre>
+<p>Everything read in as numeric. We need to convert the categorical variables to factors.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>facNames <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;partner&quot;</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;partner_incl&quot;</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;gender&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;Surgeries&quot;</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;marital&quot;</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;education&quot;</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;dep_hist&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;dep_treat&quot;</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;gender_p&quot;</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;education_p&quot;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;presence_p&quot;</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;relation_t3&quot;</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>dat0[facNames] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(dat0[facNames], as_factor)</span></code></pre></div>
+<p>Let’s do a quick a dirty check for constant columns.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>nLevels <span class="ot">&lt;-</span> <span class="fu">sapply</span>(dat0, <span class="cf">function</span>(x) <span class="fu">length</span>(<span class="fu">unique</span>(<span class="fu">na.omit</span>(x))))</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(nLevels <span class="sc">==</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<div id="missing-data" class="section level2">
+<h2>Missing Data</h2>
+<p>How much missing data are we dealing with?</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pm <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(<span class="fu">is.na</span>(dat0))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(pm[pm <span class="sc">&gt;</span> <span class="dv">0</span>])</span></code></pre></div>
+<pre><code>## [1] 0.04887218 0.64285714</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(pm)</span></code></pre></div>
+<p><img src="prepData_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pm</span></code></pre></div>
+<pre><code>##       ID_random         partner    partner_incl          gender             age 
+##      0.00000000      0.00000000      0.29323308      0.00000000      0.00000000 
+##       Surgeries            TBSA         marital       education        dep_hist 
+##      0.00000000      0.00000000      0.05263158      0.05639098      0.04887218 
+##       dep_treat           age_p        gender_p     education_p      presence_p 
+##      0.04887218      0.55639098      0.55639098      0.55639098      0.57894737 
+##     relation_t3 rel_duration_t3         IES1_t2         IES2_t2         IES3_t2 
+##      0.24812030      0.45112782      0.18421053      0.18421053      0.19172932 
+##         IES4_t2         IES5_t2         IES6_t2         IES7_t2         IES8_t2 
+##      0.18796992      0.18796992      0.18421053      0.18796992      0.18421053 
+##         IES9_t2        IES10_t2        IES11_t2        IES12_t2        IES13_t2 
+##      0.18421053      0.18421053      0.18421053      0.18421053      0.18421053 
+##        IES14_t2        IES15_t2        IES16_t2        IES17_t2        IES18_t2 
+##      0.18421053      0.18421053      0.18796992      0.18421053      0.18421053 
+##        IES19_t2        IES20_t2        IES21_t2        IES22_t2         BDI1_t2 
+##      0.18421053      0.18421053      0.18421053      0.18421053      0.17669173 
+##         BDI2_t2         BDI3_t2         BDI4_t2         BDI5_t2         BDI6_t2 
+##      0.17669173      0.17669173      0.17669173      0.17669173      0.17669173 
+##         BDI7_t2         BDI8_t2         BDI9_t2        BDI10_t2        BDI11_t2 
+##      0.17669173      0.17669173      0.17669173      0.17669173      0.17669173 
+##        BDI12_t2        BDI13_t2        BDI14_t2        BDI15_t2        BDI16_t2 
+##      0.17669173      0.17669173      0.17669173      0.17669173      0.17669173 
+##        BDI17_t2        BDI18_t2        BDI19_t2        BDI20_t2        BDI21_t2 
+##      0.18045113      0.18421053      0.18421053      0.18421053      0.19172932 
+##         GRS1_t2         GRS2_t2         GRS3_t2         GRS4_t2         GRS5_t2 
+##      0.18796992      0.18796992      0.19172932      0.19548872      0.18796992 
+##         GRS6_t2         GRS7_t2         GRS8_t2         GRS9_t2        GRS10_t2 
+##      0.18796992      0.18796992      0.18796992      0.19172932      0.19172932 
+##        GRS11_t2        GRS12_t2        GRS13_t2        GRS14_t2        GRS15_t2 
+##      0.18796992      0.18796992      0.18796992      0.18796992      0.19172932 
+##         PSQ1_t2         PSQ2_t2         PSQ3_t2         PSQ4_t2         PSQ5_t2 
+##      0.17669173      0.17669173      0.18045113      0.18045113      0.18045113 
+##         PSQ6_t2         PSQ7_t2         PSQ8_t2         PSQ9_t2        PSQ10_t2 
+##      0.17669173      0.18045113      0.18045113      0.18796992      0.19548872 
+##        PSQ11_t2        PSQ12_t2        PSQ13_t2        PSQ14_t2        PSQ15_t2 
+##      0.18796992      0.18796992      0.18045113      0.18421053      0.18796992 
+##        PSQ16_t2        PSQ17_t2        PSQ18_t2        PSQ19_t2        PSQ20_t2 
+##      0.18421053      0.18421053      0.18421053      0.18421053      0.18796992 
+##        PSQ21_t2        cerq1_t2        cerq3_t2        cerq5_t2        cerq7_t2 
+##      0.18421053      0.17669173      0.17669173      0.17669173      0.18045113 
+##        POSR1_t2        POSR2_t2        POSR3_t2        POSR4_t2        POSR5_t2 
+##      0.39097744      0.39097744      0.39097744      0.39097744      0.39097744 
+##        POSR6_t2         IES1_t3         IES2_t3         IES3_t3         IES4_t3 
+##      0.45488722      0.23308271      0.23308271      0.23308271      0.23308271 
+##         IES5_t3         IES6_t3         IES7_t3         IES8_t3         IES9_t3 
+##      0.23684211      0.23308271      0.23308271      0.23684211      0.23684211 
+##        IES10_t3        IES11_t3        IES12_t3        IES13_t3        IES14_t3 
+##      0.23684211      0.23308271      0.23308271      0.23308271      0.23308271 
+##        IES15_t3        IES16_t3        IES17_t3        IES18_t3        IES19_t3 
+##      0.23308271      0.23684211      0.23308271      0.23308271      0.23308271 
+##        IES20_t3        IES21_t3        IES22_t3         BDI1_t3         BDI2_t3 
+##      0.23308271      0.23308271      0.23308271      0.23308271      0.23308271 
+##         BDI3_t3         BDI4_t3         BDI5_t3         BDI6_t3         BDI7_t3 
+##      0.23308271      0.23308271      0.23308271      0.23308271      0.23308271 
+##         BDI8_t3         BDI9_t3        BDI10_t3        BDI11_t3        BDI12_t3 
+##      0.23308271      0.23684211      0.23308271      0.23308271      0.23308271 
+##        BDI13_t3        BDI14_t3        BDI15_t3        BDI16_t3        BDI17_t3 
+##      0.23308271      0.23308271      0.23308271      0.23308271      0.23684211 
+##        BDI18_t3        BDI19_t3        BDI20_t3        BDI21_t3       intim1_t3 
+##      0.23308271      0.23684211      0.23308271      0.24060150      0.45864662 
+##       intim2_t3       intim3_t3       intim4_t3       intim5_t3       intim6_t3 
+##      0.45864662      0.47368421      0.46992481      0.46616541      0.47368421 
+##       intim7_t3       intim8_t3       intim9_t3      intim10_t3      intim11_t3 
+##      0.47368421      0.47368421      0.47744361      0.46992481      0.48496241 
+##      intim12_t3      intim13_t3      intim14_t3     intim15a_t3     intim15b_t3 
+##      0.53383459      0.47368421      0.47368421      0.43609023      0.43984962 
+##     intim15c_t3     intim16a_t3     intim16b_t3     intim16c_t3         ros1_t3 
+##      0.44736842      0.46240602      0.46240602      0.46240602      0.23684211 
+##         ros2_t3         ros3_t3         ros4_t3         ros5_t3         ros6_t3 
+##      0.23684211      0.24060150      0.23308271      0.23308271      0.23308271 
+##         ros7_t3         ros8_t3         ros9_t3        ros10_t3        SWAP1_t3 
+##      0.23308271      0.23308271      0.23308271      0.23308271      0.25187970 
+##        SWAP2_t3        SWAP3_t3        SWAP4_t3        SWAP5_t3        SWAP6_t3 
+##      0.24436090      0.24436090      0.24436090      0.26691729      0.26691729 
+##        SWAP7_t3        SWAP8_t3        SWAP9_t3       SWAP10_t3       SWAP11_t3 
+##      0.26691729      0.24812030      0.24812030      0.26315789      0.25939850 
+##       SWAP12_t3       SWAP13_t3       SWAP14_t3        IES1_t2p        IES2_t2p 
+##      0.25939850      0.24812030      0.25563910      0.61654135      0.61654135 
+##        IES3_t2p        IES4_t2p        IES5_t2p        IES6_t2p        IES7_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##        IES8_t2p        IES9_t2p       IES10_t2p       IES11_t2p       IES12_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       IES13_t2p       IES14_t2p       IES15_t2p       IES16_t2p       IES17_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       IES18_t2p       IES19_t2p       IES20_t2p       IES21_t2p       IES22_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##        BDI1_t2p        BDI2_t2p        BDI3_t2p        BDI4_t2p        BDI5_t2p 
+##      0.62030075      0.61654135      0.61654135      0.61654135      0.61654135 
+##        BDI6_t2p        BDI7_t2p        BDI8_t2p        BDI9_t2p       BDI10_t2p 
+##      0.61654135      0.62030075      0.61654135      0.61654135      0.61654135 
+##       BDI11_t2p       BDI12_t2p       BDI13_t2p       BDI14_t2p       BDI15_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       BDI16_t2p       BDI17_t2p       BDI18_t2p       BDI19_t2p       BDI20_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       BDI21_t2p       cerq1_t2p       cerq3_t2p       cerq5_t2p       cerq7_t2p 
+##      0.61654135      0.62030075      0.61654135      0.61654135      0.61654135 
+##        GRS1_t2p        GRS2_t2p        GRS3_t2p        GRS4_t2p        GRS5_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.62406015 
+##        GRS6_t2p        GRS7_t2p        GRS8_t2p        GRS9_t2p       GRS10_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       GRS11_t2p       GRS12_t2p       GRS13_t2p       GRS14_t2p       GRS15_t2p 
+##      0.61654135      0.61654135      0.62030075      0.62030075      0.61654135 
+##       POSR1_t2p       POSR2_t2p       POSR3_t2p       POSR4_t2p       POSR5_t2p 
+##      0.61654135      0.61654135      0.61654135      0.61654135      0.61654135 
+##       POSR6_t2p        BDI1_t3p        BDI2_t3p        BDI3_t3p        BDI4_t3p 
+##      0.61654135      0.63909774      0.63909774      0.63909774      0.63909774 
+##        BDI5_t3p        BDI6_t3p        BDI7_t3p        BDI8_t3p        BDI9_t3p 
+##      0.63909774      0.64285714      0.64285714      0.63909774      0.63909774 
+##       BDI10_t3p       BDI11_t3p       BDI12_t3p       BDI13_t3p       BDI14_t3p 
+##      0.63909774      0.63909774      0.63909774      0.63909774      0.63909774 
+##       BDI15_t3p       BDI16_t3p       BDI17_t3p       BDI18_t3p       BDI19_t3p 
+##      0.63909774      0.63909774      0.63909774      0.63909774      0.63909774 
+##       BDI20_t3p       BDI21_t3p        IES1_t3p        IES2_t3p        IES3_t3p 
+##      0.63909774      0.63909774      0.63157895      0.63157895      0.63533835 
+##        IES4_t3p        IES5_t3p        IES6_t3p        IES7_t3p        IES8_t3p 
+##      0.63533835      0.63533835      0.63533835      0.63157895      0.63533835 
+##        IES9_t3p       IES10_t3p       IES11_t3p       IES12_t3p       IES13_t3p 
+##      0.63157895      0.63157895      0.63533835      0.63157895      0.63157895 
+##       IES14_t3p       IES15_t3p       IES16_t3p       IES17_t3p       IES18_t3p 
+##      0.63157895      0.63157895      0.63533835      0.63157895      0.63533835 
+##       IES19_t3p       IES20_t3p       IES21_t3p       IES22_t3p 
+##      0.63157895      0.63157895      0.63157895      0.63157895</code></pre>
+<p>What does the covariance coverage look like?</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>cc <span class="ot">&lt;-</span> <span class="fu">md.pairs</span>(dat0)<span class="sc">$</span>rr <span class="sc">/</span> <span class="fu">nrow</span>(dat0)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(cc[cc <span class="sc">&lt;</span> <span class="dv">1</span>])</span></code></pre></div>
+<pre><code>## [1] 0.2593985 0.9511278</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(cc)</span></code></pre></div>
+<p><img src="prepData_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /></p>
+<p>Not awful. There is quite a large cluster of coverages around 30% - 40%, but we should be able to deal with that.</p>
+<hr />
+<p>What kind of missing data patterns are we looking at?</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Calculate response patterns:</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>pats <span class="ot">&lt;-</span> <span class="fu">md.pattern</span>(dat0)</span></code></pre></div>
+<p><img src="prepData_files/figure-html/unnamed-chunk-8-1.png" width="100%" style="display: block; margin: auto;" /></p>
+<p>Hmm…that’s not a very enlightening figure. At least we can compute the number of unique response patterns.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(pats) <span class="sc">-</span> <span class="dv">1</span></span></code></pre></div>
+<pre><code>## [1] 123</code></pre>
+<hr />
+</div>
+</div>
+<div id="exploring-partner-data" class="section level1">
+<h1>Exploring Partner Data</h1>
+<hr />
+<div id="partner-flag-variables" class="section level2">
+<h2>Partner Flag Variables</h2>
+<p>What do the partner flags look like?</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">partner</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">unknown</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">partner</td>
+<td align="right">72</td>
+</tr>
+<tr class="odd">
+<td align="left">no partner</td>
+<td align="right">186</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">partner participates</th>
+<th align="right">partner does not participate</th>
+<th align="right">NA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">unknown</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">partner</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">70</td>
+</tr>
+<tr class="odd">
+<td align="left">no partner</td>
+<td align="right">123</td>
+<td align="right">63</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>I think the <code>partner</code> variable is junk.</p>
+<ul>
+<li>All cases with <em>unknown</em> partner status, and almost all cases who claim to have a partner are missing on the <code>partner_incl</code> variable.
+<ul>
+<li>I guess the first makes sense, but the second doesn’t.</li>
+</ul></li>
+<li>Also, of the 186 cases who claim not to have a partner, 123 simultaneously claim that their non-existant partner will participate.</li>
+</ul>
+</div>
+<div id="partner-data" class="section level2">
+<h2>Partner Data</h2>
+<p>What about the partner data themselves?</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Factor indicating partner participation:</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pIncl <span class="ot">&lt;-</span> dat0<span class="sc">$</span>partner_incl</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Extract the partner data:</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>pData <span class="ot">&lt;-</span> dat0[<span class="fu">grep</span>(<span class="st">&quot;p$&quot;</span>, <span class="fu">colnames</span>(dat0))]</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Separate demographics and scales:</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>scales     <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">&quot;_t</span><span class="sc">\\</span><span class="st">dp&quot;</span>, <span class="fu">colnames</span>(pData))</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>pScaleData <span class="ot">&lt;-</span> pData[scales]</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>pDemoData  <span class="ot">&lt;-</span> pData[<span class="sc">!</span>scales]</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="do">## How much missing data on demos and scales?</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="fu">colMeans</span>(<span class="fu">is.na</span>(pDemoData))</span></code></pre></div>
+<pre><code>##       age_p    gender_p education_p  presence_p 
+##   0.5563910   0.5563910   0.5563910   0.5789474</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colMeans</span>(<span class="fu">is.na</span>(pScaleData))</span></code></pre></div>
+<pre><code>##  IES1_t2p  IES2_t2p  IES3_t2p  IES4_t2p  IES5_t2p  IES6_t2p  IES7_t2p  IES8_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 
+##  IES9_t2p IES10_t2p IES11_t2p IES12_t2p IES13_t2p IES14_t2p IES15_t2p IES16_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 
+## IES17_t2p IES18_t2p IES19_t2p IES20_t2p IES21_t2p IES22_t2p  BDI1_t2p  BDI2_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6203008 0.6165414 
+##  BDI3_t2p  BDI4_t2p  BDI5_t2p  BDI6_t2p  BDI7_t2p  BDI8_t2p  BDI9_t2p BDI10_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6203008 0.6165414 0.6165414 0.6165414 
+## BDI11_t2p BDI12_t2p BDI13_t2p BDI14_t2p BDI15_t2p BDI16_t2p BDI17_t2p BDI18_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 0.6165414 
+## BDI19_t2p BDI20_t2p BDI21_t2p cerq1_t2p cerq3_t2p cerq5_t2p cerq7_t2p  GRS1_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6203008 0.6165414 0.6165414 0.6165414 0.6165414 
+##  GRS2_t2p  GRS3_t2p  GRS4_t2p  GRS5_t2p  GRS6_t2p  GRS7_t2p  GRS8_t2p  GRS9_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6240602 0.6165414 0.6165414 0.6165414 0.6165414 
+## GRS10_t2p GRS11_t2p GRS12_t2p GRS13_t2p GRS14_t2p GRS15_t2p POSR1_t2p POSR2_t2p 
+## 0.6165414 0.6165414 0.6165414 0.6203008 0.6203008 0.6165414 0.6165414 0.6165414 
+## POSR3_t2p POSR4_t2p POSR5_t2p POSR6_t2p  BDI1_t3p  BDI2_t3p  BDI3_t3p  BDI4_t3p 
+## 0.6165414 0.6165414 0.6165414 0.6165414 0.6390977 0.6390977 0.6390977 0.6390977 
+##  BDI5_t3p  BDI6_t3p  BDI7_t3p  BDI8_t3p  BDI9_t3p BDI10_t3p BDI11_t3p BDI12_t3p 
+## 0.6390977 0.6428571 0.6428571 0.6390977 0.6390977 0.6390977 0.6390977 0.6390977 
+## BDI13_t3p BDI14_t3p BDI15_t3p BDI16_t3p BDI17_t3p BDI18_t3p BDI19_t3p BDI20_t3p 
+## 0.6390977 0.6390977 0.6390977 0.6390977 0.6390977 0.6390977 0.6390977 0.6390977 
+## BDI21_t3p  IES1_t3p  IES2_t3p  IES3_t3p  IES4_t3p  IES5_t3p  IES6_t3p  IES7_t3p 
+## 0.6390977 0.6315789 0.6315789 0.6353383 0.6353383 0.6353383 0.6353383 0.6315789 
+##  IES8_t3p  IES9_t3p IES10_t3p IES11_t3p IES12_t3p IES13_t3p IES14_t3p IES15_t3p 
+## 0.6353383 0.6315789 0.6315789 0.6353383 0.6315789 0.6315789 0.6315789 0.6315789 
+## IES16_t3p IES17_t3p IES18_t3p IES19_t3p IES20_t3p IES21_t3p IES22_t3p 
+## 0.6353383 0.6315789 0.6353383 0.6315789 0.6315789 0.6315789 0.6315789</code></pre>
+<p>We have a bit more missing data on the partner scales than partner demographics.</p>
+<hr />
+<p>What about cases missing all demographics, all scales, or both?</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>noPDemos  <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(<span class="fu">is.na</span>(pDemoData)) <span class="sc">==</span> <span class="dv">1</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>noPScales <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(<span class="fu">is.na</span>(pScaleData)) <span class="sc">==</span> <span class="dv">1</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>noPData   <span class="ot">&lt;-</span> noPDemos <span class="sc">&amp;</span> noPScales</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>noPDemosF <span class="ot">&lt;-</span> <span class="fu">factor</span>(noPDemos, </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">paste</span>(<span class="st">&quot;Partner Demos&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;Missing&quot;</span>))</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>noPScalesF <span class="ot">&lt;-</span> <span class="fu">factor</span>(noPScales, </span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">paste</span>(<span class="st">&quot;Partner Scales&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;Missing&quot;</span>))</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>                     )</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>noPDataF <span class="ot">&lt;-</span> <span class="fu">factor</span>(noPData, </span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>                   <span class="at">labels =</span> <span class="fu">paste</span>(<span class="st">&quot;Partner Data&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;Missing&quot;</span>))</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>                   )</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">table</span>(noPDemosF, noPScalesF))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Partner Demos Observed</td>
+<td align="right">106</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">Partner Demos Missing</td>
+<td align="right">1</td>
+<td align="right">146</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">table</span>(pIncl, noPDemosF, <span class="at">useNA =</span> <span class="st">&quot;ifany&quot;</span>))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Demos Observed</th>
+<th align="right">Partner Demos Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">118</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">1</td>
+<td align="right">63</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">0</td>
+<td align="right">78</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">table</span>(pIncl, noPScalesF, <span class="at">useNA =</span> <span class="st">&quot;ifany&quot;</span>))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">106</td>
+<td align="right">18</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">1</td>
+<td align="right">63</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">0</td>
+<td align="right">78</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">table</span>(pIncl, noPDataF, <span class="at">useNA =</span> <span class="st">&quot;ifany&quot;</span>))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Data Observed</th>
+<th align="right">Partner Data Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">119</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">1</td>
+<td align="right">63</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">0</td>
+<td align="right">78</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="exploringfixing-strange-cases" class="section level2">
+<h2>Exploring/Fixing Strange Cases</h2>
+<p>All cases with missing values on <code>partner_incl</code> also miss all of their partner data.</p>
+<ul>
+<li>It seems pretty safe to assign all of these cases to the <em>partner does not participate</em> group.</li>
+</ul>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>dat0<span class="sc">$</span>partner_incl[<span class="fu">is.na</span>(dat0<span class="sc">$</span>partner_incl)] <span class="ot">&lt;-</span> <span class="st">&quot;partner does not participate&quot;</span></span></code></pre></div>
+<p>There is one case in the <em>partner does not participate</em> group who has partner data. What’s going on there?</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>flag <span class="ot">&lt;-</span> dat0<span class="sc">$</span>partner_incl <span class="sc">==</span> <span class="st">&quot;partner does not participate&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>noPData</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(flag)</span></code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.na</span>(pData[flag, ])</span></code></pre></div>
+<pre><code>##      age_p gender_p education_p presence_p IES1_t2p IES2_t2p IES3_t2p IES4_t2p
+## [1,] FALSE    FALSE       FALSE      FALSE    FALSE    FALSE    FALSE    FALSE
+##      IES5_t2p IES6_t2p IES7_t2p IES8_t2p IES9_t2p IES10_t2p IES11_t2p IES12_t2p
+## [1,]    FALSE    FALSE    FALSE    FALSE    FALSE     FALSE     FALSE     FALSE
+##      IES13_t2p IES14_t2p IES15_t2p IES16_t2p IES17_t2p IES18_t2p IES19_t2p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE
+##      IES20_t2p IES21_t2p IES22_t2p BDI1_t2p BDI2_t2p BDI3_t2p BDI4_t2p BDI5_t2p
+## [1,]     FALSE     FALSE     FALSE    FALSE    FALSE    FALSE    FALSE    FALSE
+##      BDI6_t2p BDI7_t2p BDI8_t2p BDI9_t2p BDI10_t2p BDI11_t2p BDI12_t2p
+## [1,]    FALSE    FALSE    FALSE    FALSE     FALSE     FALSE     FALSE
+##      BDI13_t2p BDI14_t2p BDI15_t2p BDI16_t2p BDI17_t2p BDI18_t2p BDI19_t2p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE
+##      BDI20_t2p BDI21_t2p cerq1_t2p cerq3_t2p cerq5_t2p cerq7_t2p GRS1_t2p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE    FALSE
+##      GRS2_t2p GRS3_t2p GRS4_t2p GRS5_t2p GRS6_t2p GRS7_t2p GRS8_t2p GRS9_t2p
+## [1,]    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE
+##      GRS10_t2p GRS11_t2p GRS12_t2p GRS13_t2p GRS14_t2p GRS15_t2p POSR1_t2p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE
+##      POSR2_t2p POSR3_t2p POSR4_t2p POSR5_t2p POSR6_t2p BDI1_t3p BDI2_t3p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE    FALSE    FALSE
+##      BDI3_t3p BDI4_t3p BDI5_t3p BDI6_t3p BDI7_t3p BDI8_t3p BDI9_t3p BDI10_t3p
+## [1,]    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE     FALSE
+##      BDI11_t3p BDI12_t3p BDI13_t3p BDI14_t3p BDI15_t3p BDI16_t3p BDI17_t3p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE
+##      BDI18_t3p BDI19_t3p BDI20_t3p BDI21_t3p IES1_t3p IES2_t3p IES3_t3p
+## [1,]     FALSE     FALSE     FALSE     FALSE    FALSE    FALSE    FALSE
+##      IES4_t3p IES5_t3p IES6_t3p IES7_t3p IES8_t3p IES9_t3p IES10_t3p IES11_t3p
+## [1,]    FALSE    FALSE    FALSE    FALSE    FALSE    FALSE     FALSE     FALSE
+##      IES12_t3p IES13_t3p IES14_t3p IES15_t3p IES16_t3p IES17_t3p IES18_t3p
+## [1,]     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE     FALSE
+##      IES19_t3p IES20_t3p IES21_t3p IES22_t3p
+## [1,]     FALSE     FALSE     FALSE     FALSE</code></pre>
+<p>This person has all partner data, so they should go in the <em>partner participates</em> group.</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>dat0[flag, <span class="st">&quot;partner_incl&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;partner participates&quot;</span></span></code></pre></div>
+<p>Let’s look at those crosstabs again.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Partner Demos Observed</td>
+<td align="right">106</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">Partner Demos Missing</td>
+<td align="right">1</td>
+<td align="right">146</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Demos Observed</th>
+<th align="right">Partner Demos Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">119</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">141</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">107</td>
+<td align="right">18</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">141</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Data Observed</th>
+<th align="right">Partner Data Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">120</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">141</td>
+</tr>
+</tbody>
+</table>
+<p>In the <em>partner participates</em> group, there are 18 cases with no scale data for partners and 5 cases with no partner data, at all.</p>
+<ul>
+<li>Should we move (on set of) these cases to the <em>partner does not participate</em> group?</li>
+<li>I guess that depends on how the participants ended up in the partner groups.
+<ul>
+<li>If they were assigned, we shouldn’t move anyone (we should to an ITT analysis).</li>
+<li>If they simply reported, it should be safe to move them.</li>
+</ul></li>
+</ul>
+<p>I don’t think partner participation was randomly assigned, so let’s move these cases, for now.</p>
+<ul>
+<li>Need to confirm this choice with Nancy et al.</li>
+</ul>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>dat0[noPData, <span class="st">&quot;partner_incl&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;partner does not participate&quot;</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Demos Observed</th>
+<th align="right">Partner Demos Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">119</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">146</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">107</td>
+<td align="right">13</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">146</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Data Observed</th>
+<th align="right">Partner Data Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">partner participates</td>
+<td align="right">120</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">partner does not participate</td>
+<td align="right">0</td>
+<td align="right">146</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="exploring-patient-scale-data" class="section level1">
+<h1>Exploring Patient Scale Data</h1>
+<hr />
+<div id="missing-data-1" class="section level2">
+<h2>Missing Data</h2>
+<p>Let’s see if any case is missing all of the patient scale data:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>scaleNames <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;_t</span><span class="sc">\\</span><span class="st">d$&quot;</span>, <span class="fu">colnames</span>(dat0), <span class="at">value =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grep</span>(<span class="st">&quot;^rel&quot;</span>, ., <span class="at">invert =</span> <span class="cn">TRUE</span>, <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>otherNames <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">colnames</span>(dat0), </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">c</span>(<span class="st">&quot;ID_random&quot;</span>, scaleNames, <span class="fu">colnames</span>(pData))</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>                      )</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>scaleData <span class="ot">&lt;-</span> dat0[scaleNames]</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>otherData <span class="ot">&lt;-</span> dat0[otherNames]</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>colPm <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(<span class="fu">is.na</span>(scaleData))</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>rowPm <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(<span class="fu">is.na</span>(scaleData))</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(colPm)</span></code></pre></div>
+<p><img src="prepData_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>noScales <span class="ot">&lt;-</span> rowPm <span class="sc">==</span> <span class="dv">1</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(noScales)</span></code></pre></div>
+<pre><code>## [1] 41</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(noScales)</span></code></pre></div>
+<pre><code>## [1] 0.1541353</code></pre>
+<p>The variablewise percents missing look pretty good. There are a few variables in the 40% to 50% missing range, but mostly the percents missing are around 25%.</p>
+<p>The rowwise picture doesn’t look so good, though. There are 41 cases (15.4%) with no scale data, at all.</p>
+</div>
+<div id="evaluating-coverage" class="section level2">
+<h2>Evaluating Coverage</h2>
+<p>What kind of data <em>do</em> we have for the cases with entirely missing patient scale data?</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>noScalesF <span class="ot">&lt;-</span> <span class="fu">factor</span>(noScales, </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">paste</span>(<span class="st">&quot;Patient Scales&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;Observed&quot;</span>, <span class="st">&quot;Missing&quot;</span>))</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">table</span>(noScalesF)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">table</span>(noScalesF, noPScalesF)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>t3 <span class="ot">&lt;-</span> <span class="fu">table</span>(noScalesF, noPDemosF)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>t4 <span class="ot">&lt;-</span> <span class="fu">table</span>(noScalesF, noPDataF)</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>t5 <span class="ot">&lt;-</span> <span class="fu">table</span>(noScalesF, pIncl)</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(t1)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">noScalesF</th>
+<th align="right">Freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Patient Scales Observed</td>
+<td align="right">225</td>
+</tr>
+<tr class="even">
+<td align="left">Patient Scales Missing</td>
+<td align="right">41</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(t2)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Scales Observed</th>
+<th align="right">Partner Scales Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Patient Scales Observed</td>
+<td align="right">106</td>
+<td align="right">119</td>
+</tr>
+<tr class="even">
+<td align="left">Patient Scales Missing</td>
+<td align="right">1</td>
+<td align="right">40</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(t3)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Demos Observed</th>
+<th align="right">Partner Demos Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Patient Scales Observed</td>
+<td align="right">109</td>
+<td align="right">116</td>
+</tr>
+<tr class="even">
+<td align="left">Patient Scales Missing</td>
+<td align="right">10</td>
+<td align="right">31</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(t4)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Partner Data Observed</th>
+<th align="right">Partner Data Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Patient Scales Observed</td>
+<td align="right">110</td>
+<td align="right">115</td>
+</tr>
+<tr class="even">
+<td align="left">Patient Scales Missing</td>
+<td align="right">10</td>
+<td align="right">31</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(t5)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">partner participates</th>
+<th align="right">partner does not participate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Patient Scales Observed</td>
+<td align="right">110</td>
+<td align="right">115</td>
+</tr>
+<tr class="even">
+<td align="left">Patient Scales Missing</td>
+<td align="right">10</td>
+<td align="right">31</td>
+</tr>
+</tbody>
+</table>
+<p>Of the 41 cases missing all patient scale data, 40 are also missing partner scale data and 31 are missing all partner data.</p>
+<hr />
+<p>What kind of non-scale data do we have for the cases without patient scale data?</p>
+<p><img src="prepData_files/figure-html/unnamed-chunk-21-1.png" style="display: block; margin: auto;" /></p>
+<ul>
+<li>None of these cases have data on the <code>relation_t3</code> variable or the <code>rel_duration_t3</code> variable.</li>
+<li>As seen in the tables above, 10 cases have observed partner demographics.</li>
+<li>The response rates for the non-partner, non-scale variables looks pretty good, but these 41 cases still face a brutal imputation challange.
+<ul>
+<li>For the 31 cases with missing partner demographics, we’re talking about imputing 293 or 294 variables from 11 or 12 predictors.</li>
+<li>For the 10 cases with observed partner demographics, the story isn’t much nicer. We still need to impute 289 or 290 variables from 12 or 16 predictors.</li>
+</ul></li>
+</ul>
+<hr />
+<p>If we have to exclude the 41 cases with completely missing patient scale data, we’ll still have 225 cases to work with. However, if we also have to exclude the cases with completely missing partner data, we’ll only have 110 cases.</p>
+<hr />
+</div>
+</div>
+<div id="wrapping-up" class="section level1">
+<h1>Wrapping Up</h1>
+<hr />
+<p>Let’s add some variables to flag the problematic cases discoverd above. - We can try the analysis on reduced samples, if necessary.</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>dat0<span class="sc">$</span>empty_patient_scales <span class="ot">&lt;-</span> noScalesF</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>dat0<span class="sc">$</span>empty_partner_scales <span class="ot">&lt;-</span> noPScalesF</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>dat0<span class="sc">$</span>empty_partner_data   <span class="ot">&lt;-</span> noPDataF</span></code></pre></div>
+<p><em>NOTE:</em> If we switch every case with entirely missing partner data to the <em>partner does not participate</em> group, then the <code>empty_partner_data</code> variable is perfectly redundant with the <code>partner_incl</code> variable.</p>
+<hr />
+<p>I think we’ve got the data pretty much ready to go. Let’s save the cleaned data.</p>
+<ul>
+<li>We’ll do the data synthesis/imputation in another script.</li>
+</ul>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(dat0, <span class="fu">paste0</span>(dataDir, <span class="st">&quot;cleaned_burn_data.rds&quot;</span>))</span></code></pre></div>
+<hr />
+<p>END</p>
+</div>
+    </section>
+  </div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

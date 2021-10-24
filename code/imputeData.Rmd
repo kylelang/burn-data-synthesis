@@ -1,0 +1,257 @@
+---
+title: "Synthesize/Impute Data"
+author: "Kyle M. Lang"
+date: "2021-10-22"
+output: 
+ prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+    toc: true
+    #toc_float: true
+    toc_depth: 2
+    #numbered_sections: true
+    df_print: paged
+    self_contained: false
+    css: my_style.css
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",  
+                      dev.args = list(bg = "transparent")
+                      )
+```
+
+In this script, we'll synthesize/impute the cleaned burn data. We have a whole 
+bunch of missing data on top of the variables we need to synthesize. We'll kill
+two birds with one stone by doing the imputation and synthesis simultaneously
+using the **mice** package.
+
+---
+
+# Data Ingest
+
+---
+
+First, we'll clear the workspace, load necessary packages, and define some 
+global variables.
+
+```{r, warning = FALSE, message = FALSE}
+rm(list = ls(all = TRUE))
+
+library(ggplot2)
+library(plotly)
+library(viridis)
+library(haven)
+library(mice)
+library(xtable)
+library(knitr)
+
+source("select_preds.R")
+
+dataDir <- "../../data/"
+plotDir <- "../figures/"
+fn      <- "cleaned_burn_data.rds"
+```
+
+Now, we'll read in the data.
+
+```{r, cache = TRUE}
+dat0 <- readRDS(paste0(dataDir, fn))
+
+dim(dat0)
+head(dat0)
+```
+
+That looks to have been successful. Let's exclude two variables based on the 
+findings during data cleaning.
+
+1. The `partner` variable, because it's completely broken.
+1. The `empty_partner_data` variable because it's perfectly redundant with 
+`parnter_incl`.
+
+```{r}
+dat0 <- dat0[setdiff(colnames(dat0), c("partner", "empty_partner_data"))]
+```
+
+The `mice()` function won't work with labelled vectors from **haven**, so we 
+need to covert our data into a normal data frame without fancy vector types.
+
+```{r}
+dat1        <- dat0
+class(dat1) <- "data.frame"
+
+facFlag <- sapply(dat1, is.factor)
+
+dat1[!facFlag] <- lapply(dat1[!facFlag], as.numeric)
+```
+
+---
+
+# Imputation/Synthesis
+
+---
+
+First, we'll try the imputation using all the data. If this doesn't work, we'll 
+try excluding some of the problematic cases we discovered during data cleaning.
+
+## Setup
+
+We have way too many variables to use them all as predictors in the imputation 
+models.
+
+- Our first step will be to create a more parsimonious predictor matrix using 
+`mice::quickpred()`.
+   - We'll select all variables that have a minimum correlation of *r* = 0.3 as 
+   predictors.
+   - We'll use Spearmans $\rho$ because the items are all ordinal or discrete.
+   - We'll exclude the ID variable, for obvious reasons.
+   
+```{r}
+predMat <- 
+  quickpred(dat1, mincor = 0.3, method = "spearman", exclude = "ID_random")
+```
+
+Let's see how many predictors we selected for each target
+
+```{r}
+pm     <- colMeans(is.na(dat1))
+nPreds <- rowSums(predMat[pm > 0, ])
+
+range(nPreds)
+hist(nPreds)
+```
+
+Well, that appraoch didn't really work. A few variables only got a small number 
+of predictors (the fewest being `r min(nPreds)`), but many (i.e., 
+`r sum(nPreds > 100)`) got more than a 100 predictors.
+
+Let's try something different. This is going to be stupidly inefficient, but 
+let's go for it.
+
+First, we'll generate a range of predictor matrices with varying levels of 
+minimum correlation.
+
+```{r, cache = TRUE}
+predMats <- lapply(seq(0.1, 0.9, 0.1),
+                   function(x, data)
+                     quickpred(data, 
+                               mincor = x, 
+                               method = "spearman", 
+                               exclude = "ID_random"),
+                   data = dat1)
+```
+
+Then, we'll count the number of predictors selected for each target in each 
+predictor matrix and find which predictor matrix gives the closest to 20 
+predictors for each target.
+
+```{r}
+predCounts <- sapply(predMats, rowSums)
+bestMat    <- apply(abs(predCounts - 20), 1, which.min)
+```
+
+Finally, we build a single predictor matrix by selecting the appropriate row out 
+of the best matrix for each target variable.
+
+```{r}
+predMat <- matrix(0, 
+                  ncol(dat1), 
+                  ncol(dat1), 
+                  dimnames = list(colnames(dat1), colnames(dat1))
+                  )
+
+targets <- colnames(dat1)[pm > 0]
+for(v in targets) predMat[v, ] <- predMats[[bestMat[v]]][v, ]
+```
+
+---
+
+We need to define which variables to overimpute for synthesis purposes.
+
+```{r}
+synStems <- c("age",
+              "gender",
+              "education",
+              "marital",
+              "Surgeries",
+              "TBSA",
+              "dep")
+
+synTargets <- 
+  grep(paste(synStems, collapse = "|"), colnames(dat1), value = TRUE)
+```
+
+Now, we construct a `where` matrix to tell **mice** which values to impute.
+
+- We need to request imputations for all missing values.
+- We also want to request imputations for the observed values on the variables 
+listed in `synTargets`.
+   - This overimputation will be our means of synthesizing the sensitive data.
+   
+```{r}
+## Start with a standard where matrix flagging all missing values:
+whereMat <- make.where(data = dat1, keyword = "missing")
+
+## Add the overimputation information:
+whereMat[ , synTargets] <- TRUE
+```
+
+We should now be ready to run the imputation.
+
+## Generate Imputations
+
+```{r, eval = FALSE}
+miceOut <- mice(data = dat1,
+                m = 25,
+                maxit = 50,
+                method = "cart", 
+                predictorMatrix = predMat,
+                where = whereMat,
+                seed = 235711)
+
+saveRDS(miceOut, paste0(dataDir, "burn_data_mids_m25_it50_cart.rds"))
+```
+
+```{r echo = FALSE}
+miceOut <- readRDS(paste0(dataDir, "burn_data_mids_m25_it50_cart.rds"))
+```
+
+```{r}
+miceOut$loggedEvents
+```
+
+It looks like many variables got dropped due to collinearity.
+
+- The flags for missing patient/partner data seem to be especially susceptible.
+- This isn't surprising since we have so much missing data and these flags have 
+a lot of overlap.
+- None of this should be a problem.
+
+## Check Imputations
+
+```{r, eval = FALSE}
+pdf(paste0(plotDir, "mice_traceplots_m25_it50_cart.pdf"), onefile = TRUE)
+plot(miceOut)
+dev.off()
+```
+
+OK. After checking the plots in the PDF we just produced, it looks like the 
+imputation models have all converged by 50 iterations. Let's see if the imputed 
+values are plausible.
+
+```{r, eval = FALSE}
+### NOTE: This section is not currently working.
+targets <- names(which(miceOut$method != ""))
+
+pdf(paste0(plotDir, "mice_stripplots_m25_it50_cart.pdf"), onefile = TRUE)
+
+v <- as.formula(targets[1])
+
+for(v in targets)
+  print(stripplot(miceOut, gender))
+dev.off()
+```
+
