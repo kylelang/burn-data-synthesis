@@ -49,7 +49,7 @@ library(mice)
 library(xtable)
 library(knitr)
 
-source("select_preds.R")
+source("quickpred_custom.R")
 
 dataDir <- "../../data/"
 plotDir <- "../figures/"
@@ -124,17 +124,47 @@ range(nPreds)
 hist(nPreds)
 ```
 
-Well, that appraoch didn't really work. A few variables only got a small number 
+Well, that approach didn't really work. A few variables only got a small number 
 of predictors (the fewest being `r min(nPreds)`), but many (i.e., 
 `r sum(nPreds > 100)`) got more than a 100 predictors.
 
-Let's try something different. This is going to be stupidly inefficient, but 
-let's go for it.
+Let's try something different. We'll use the custom quickpred function that I got from Gerko Vink. 
+
+- This function will select only the *n* strongest predictors based on either 
+their correlations with the imputation target or its response indicator 
+(whichever is stronger).
+
+```{r}
+predMat <- quickpredCustom(data = dat1, 
+                           maxnumber = 20, 
+                           method = "spearman", 
+                           exclude = "ID_random")
+```
+
+Let's see if that worked correctly.
+
+```{r}
+pm     <- colMeans(is.na(dat1))
+nPreds <- rowSums(predMat[pm > 0, ])
+
+range(nPreds)
+
+sum(predMat[ , "ID_random"])
+```
+
+Looks good. 
+
+---
+
+Just for the sake of transparency, I'll include the hacky solution I tried 
+before I got the custom quickpred() function from Gerko.
+
+This is going to be stupidly inefficient, but let's go for it.
 
 First, we'll generate a range of predictor matrices with varying levels of 
 minimum correlation.
 
-```{r, cache = TRUE}
+```{r, eval = FALSE, cache = TRUE}
 predMats <- lapply(seq(0.1, 0.9, 0.1),
                    function(x, data)
                      quickpred(data, 
@@ -148,7 +178,7 @@ Then, we'll count the number of predictors selected for each target in each
 predictor matrix and find which predictor matrix gives the closest to 20 
 predictors for each target.
 
-```{r}
+```{r, eval = FALSE}
 predCounts <- sapply(predMats, rowSums)
 bestMat    <- apply(abs(predCounts - 20), 1, which.min)
 ```
@@ -156,7 +186,7 @@ bestMat    <- apply(abs(predCounts - 20), 1, which.min)
 Finally, we build a single predictor matrix by selecting the appropriate row out 
 of the best matrix for each target variable.
 
-```{r}
+```{r, eval = FALSE}
 predMat <- matrix(0, 
                   ncol(dat1), 
                   ncol(dat1), 
@@ -182,6 +212,8 @@ synStems <- c("age",
 
 synTargets <- 
   grep(paste(synStems, collapse = "|"), colnames(dat1), value = TRUE)
+
+synTargets
 ```
 
 Now, we construct a `where` matrix to tell **mice** which values to impute.
@@ -206,17 +238,17 @@ We should now be ready to run the imputation.
 ```{r, eval = FALSE}
 miceOut <- mice(data = dat1,
                 m = 25,
-                maxit = 50,
+                maxit = 100,
                 method = "cart", 
                 predictorMatrix = predMat,
                 where = whereMat,
                 seed = 235711)
 
-saveRDS(miceOut, paste0(dataDir, "burn_data_mids_m25_it50_cart.rds"))
+saveRDS(miceOut, paste0(dataDir, "burn_data_mids_m25_it100_cart_20preds.rds"))
 ```
 
 ```{r echo = FALSE}
-miceOut <- readRDS(paste0(dataDir, "burn_data_mids_m25_it50_cart.rds"))
+miceOut <- readRDS(paste0(dataDir, "burn_data_mids_m25_it100_cart_20preds.rds"))
 ```
 
 ```{r}
@@ -233,25 +265,31 @@ a lot of overlap.
 ## Check Imputations
 
 ```{r, eval = FALSE}
-pdf(paste0(plotDir, "mice_traceplots_m25_it50_cart.pdf"), onefile = TRUE)
+pdf(paste0(plotDir, "mice_traceplots_m25_it100_cart_20preds.pdf"), 
+    onefile = TRUE)
 plot(miceOut)
 dev.off()
 ```
 
-OK. After checking the plots in the PDF we just produced, it looks like the 
-imputation models have all converged by 50 iterations. Let's see if the imputed 
-values are plausible.
+After checking the plots in the PDF we just produced, it looks like the 
+imputation models have mostly converged.
+
+- It looks like the imputation models for a few of the Intimacy and Self-Esteem 
+variables may not have fully converged, but there are no extreme trends in the 
+means or SDs of the affected variables.
+
+Let's see if the imputed values are plausible.
 
 ```{r, eval = FALSE}
-### NOTE: This section is not currently working.
-targets <- names(which(miceOut$method != ""))
+targets <- names(which(miceOut$nmis > 0))
 
-pdf(paste0(plotDir, "mice_stripplots_m25_it50_cart.pdf"), onefile = TRUE)
-
-v <- as.formula(targets[1])
-
+pdf(paste0(plotDir, "mice_densityplots_m25_it100_cart_20preds.pdf"), 
+    onefile = TRUE)
 for(v in targets)
-  print(stripplot(miceOut, gender))
+  try(
+      plot(densityplot(miceOut, as.formula(paste0("~", v))))
+      )
 dev.off()
 ```
 
+The imputations all look plausible. 

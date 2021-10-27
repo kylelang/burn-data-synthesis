@@ -1,0 +1,89 @@
+#updated quickpred function to accomodate maximum number of predictors as a selection criterion
+quickpred.custom <- function(data, maxnumber = NULL, mincor = 0.1, minpuc = 0,
+                             include = "", exclude = "", method = "pearson") {
+  # automatic predictor selection according to Van Buuren et al (1999)
+  # with updates by Gerko Vink (June 2015)
+
+  # argument checking
+  if (!(is.matrix(data) | is.data.frame(data)))
+    stop("Data should be a matrix or data frame")
+  if ((nvar <- ncol(data)) < 2)
+    stop("Data should contain at least two columns")
+  if(!is.null(maxnumber)){
+    if (maxnumber > (ncol(data) - 1)) #added GV 7 Dec 2014
+      stop("The maximum number of predictors per variable is exceeds the
+           number of variables. Solution: decrease `maxnumber`")
+  }
+  # initialize
+  predictorMatrix <- matrix(0, nrow = nvar, ncol = nvar,
+                            dimnames = list(names(data), names(data)))
+
+  # begin added / changed GV 28 juni 2015
+  data[data == 7777777] <- NA
+  data[data == 8888888] <- NA
+  data[data == 9999999] <- NA
+  data[data == "7777777"] <- NA
+  data[data == "8888888"] <- NA
+  data[data == "9999999"] <- NA
+  # end added / changed GV 28 juni 2015
+
+  x <- data.matrix(data)
+  r <- !is.na(x)
+
+  # include predictors with
+  # 1) pairwise correlation among data
+  # 2) pairwise correlation of data with response indicator
+  # higher than mincor
+  suppressWarnings(v <- abs(cor(x, use = "pairwise.complete.obs", method = method)))
+  v[is.na(v)] <- 0
+  suppressWarnings(u <- abs(cor(y = x, x = r, use = "pairwise.complete.obs",
+                                method = method)))
+  u[is.na(u)] <- 0
+  maxc <- pmax(v, u)
+
+  # begin added / changed GV 2 juli 2015
+  #exclude dichotomous variables (+1) from being a predictor
+  maxc[, apply(data, 2, function(x) length(table(x))) < 4] <- 0
+  #exclude string items
+  which.strings <- sapply(data, class)
+  maxc[, which.strings == "factor"] <- 0
+  #exclude items with too badly distributed categories
+  maxc[, apply(data, 2, function(x) any(table(x) / sum(table(x)) <.10))] <- 0
+  #exclude too large correlations
+  maxc[maxc > .95] <- 0
+  #exclude cases with more than 60 cases unobserved
+  maxc[, apply(data, 2, function(x) sum(is.na(x))) > 60] <- 0
+  # end added / changed GV 2 juli 2015
+
+  # begin added / changed GV 7 Dec 2014
+  # include only the `maxnumber` highest predictors
+  if (!is.null(maxnumber)){
+    diag(maxc) <- 0
+    #maxc[, pmatch(exclude, names(data))] <- 0 #to exclude variables from maxnumber
+    predictorMatrix[t(apply(maxc, 1, function(x) rank(x, ties = "first"))) > (nvar - maxnumber)] <- 1
+  } else {
+    predictorMatrix[maxc > mincor] <- 1
+  }
+  # end added / changed GV 7 Dec 2014
+
+#   # exclude predictors with a percentage usable cases below minpuc
+#   # begin added / changed GV 28 juni 2015
+#   p <- md.pairs(data)
+#   puc <- p$mr/(p$mr + p$mm)
+#   predictorMatrix[puc < minpuc] <- 0
+#   # end added / changed GV 28 juni 2015
+
+#   # exclude predictors listed in the exclude argument
+   yz <- pmatch(exclude, names(data))
+   predictorMatrix[, yz] <- 0
+
+  # include predictors listed in the include argument
+  yz <- pmatch(include, names(data))
+  predictorMatrix[, yz] <- 1
+
+  # some final processing
+  diag(predictorMatrix) <- 0
+  predictorMatrix[colSums(!r) == 0, ] <- 0
+  return(predictorMatrix)
+  }
+
