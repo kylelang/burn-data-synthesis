@@ -360,13 +360,13 @@ impStack <- impStack[c("Imputation_", cn)]
 impList  <- lapply(impList, function(x, y) x[y], y = cn)
 ```
 
-1. We'll save the list of R datasets before they get mangled for SPSS usage.
+2. We'll save the list of R datasets before they get mangled for SPSS usage.
 
 ```{r}
 saveRDS(impList, paste0(dataDir, "imputed_burn_data.rds"))
 ```
 
-1. Next, we need to add back the label information.
+3. Next, we need to add back the label information.
 
 ```{r}
 ## Define a function to add back the label information:
@@ -398,7 +398,7 @@ impList <- lapply(impList,
                   valueLabels = valLabs)
 ```
 
-1. Finally, we need to write the SPSS-format data to disk. 
+4. Finally, we need to write the SPSS-format data to disk. 
 
 ```{r}
 ## Save the stacked data:

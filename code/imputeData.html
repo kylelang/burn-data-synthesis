@@ -407,11 +407,11 @@ a.sourceLine {
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Order the columns as in the original data:</span></span>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> impStack[<span class="fu">c</span>(<span class="st">&quot;Imputation_&quot;</span>, cn)]</span>
 <span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>impList  <span class="ot">&lt;-</span> <span class="fu">lapply</span>(impList, <span class="cf">function</span>(x, y) x[y], <span class="at">y =</span> cn)</span></code></pre></div>
-<ol style="list-style-type: decimal">
+<ol start="2" style="list-style-type: decimal">
 <li>We’ll save the list of R datasets before they get mangled for SPSS usage.</li>
 </ol>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(impList, <span class="fu">paste0</span>(dataDir, <span class="st">&quot;imputed_burn_data.rds&quot;</span>))</span></code></pre></div>
-<ol style="list-style-type: decimal">
+<ol start="3" style="list-style-type: decimal">
 <li>Next, we need to add back the label information.</li>
 </ol>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Define a function to add back the label information:</span></span>
@@ -441,7 +441,7 @@ a.sourceLine {
 <span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>                  reLabel, </span>
 <span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>                  <span class="at">variableLabels =</span> varLabs, </span>
 <span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>                  <span class="at">valueLabels =</span> valLabs)</span></code></pre></div>
-<ol style="list-style-type: decimal">
+<ol start="4" style="list-style-type: decimal">
 <li>Finally, we need to write the SPSS-format data to disk.</li>
 </ol>
 <div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Save the stacked data:</span></span>
