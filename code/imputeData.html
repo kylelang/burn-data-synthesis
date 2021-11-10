@@ -149,6 +149,10 @@ a.sourceLine {
 <li><a href="#generate-imputations">Generate Imputations</a></li>
 <li><a href="#check-imputations">Check Imputations</a></li>
 </ul></li>
+<li><a href="#exporting-the-imputed-data">Exporting the Imputed Data</a>
+<ul>
+<li><a href="#post-processing">Post-Processing</a></li>
+</ul></li>
 </ul>
 </div>
 </div>
@@ -171,12 +175,14 @@ a.sourceLine {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xtable)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;quickpred_custom.R&quot;</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(labelled)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>dataDir <span class="ot">&lt;-</span> <span class="st">&quot;../../data/&quot;</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>plotDir <span class="ot">&lt;-</span> <span class="st">&quot;../figures/&quot;</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>fn      <span class="ot">&lt;-</span> <span class="st">&quot;cleaned_burn_data.rds&quot;</span></span></code></pre></div>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;quickpred_custom.R&quot;</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>dataDir <span class="ot">&lt;-</span> <span class="st">&quot;../../data/&quot;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>plotDir <span class="ot">&lt;-</span> <span class="st">&quot;../figures/&quot;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>fn      <span class="ot">&lt;-</span> <span class="st">&quot;cleaned_burn_data.rds&quot;</span></span></code></pre></div>
 <p>Now, we’ll read in the data.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat0 <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">paste0</span>(dataDir, fn))</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -193,7 +199,18 @@ a.sourceLine {
 <li>The <code>partner</code> variable, because it’s completely broken.</li>
 <li>The <code>empty_partner_data</code> variable because it’s perfectly redundant with <code>parnter_incl</code>.</li>
 </ol>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dat0 <span class="ot">&lt;-</span> dat0[<span class="fu">setdiff</span>(<span class="fu">colnames</span>(dat0), <span class="fu">c</span>(<span class="st">&quot;partner&quot;</span>, <span class="st">&quot;empty_partner_data&quot;</span>))]</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Save the partner flag and metadata for later use:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>partner <span class="ot">&lt;-</span> dat0<span class="sc">$</span>partner</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>varLabs <span class="ot">&lt;-</span> <span class="fu">sapply</span>(dat0, var_label)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>valLabs <span class="ot">&lt;-</span> <span class="fu">lapply</span>(dat0, val_labels)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>cn      <span class="ot">&lt;-</span> <span class="fu">colnames</span>(dat0)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Remove the problematic variables:</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>dat0 <span class="ot">&lt;-</span> dat0[<span class="fu">setdiff</span>(<span class="fu">colnames</span>(dat0), <span class="fu">c</span>(<span class="st">&quot;partner&quot;</span>, <span class="st">&quot;empty_partner_data&quot;</span>))]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="do">## We won&#39;t want to add back &quot;empty_partner_data&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>cn <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(cn, <span class="st">&quot;empty_partner_data&quot;</span>)</span></code></pre></div>
 <p>The <code>mice()</code> function won’t work with labelled vectors from <strong>haven</strong>, so we need to covert our data into a normal data frame without fancy vector types.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat1        <span class="ot">&lt;-</span> dat0</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(dat1) <span class="ot">&lt;-</span> <span class="st">&quot;data.frame&quot;</span></span>
@@ -346,6 +363,95 @@ a.sourceLine {
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>      )</span>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code></pre></div>
 <p>The imputations all look plausible.</p>
+</div>
+</div>
+<div id="exporting-the-imputed-data" class="section level1">
+<h1>Exporting the Imputed Data</h1>
+<p>We’ll export the data in three formats:</p>
+<ol style="list-style-type: decimal">
+<li>Individual .sav files for single-dataset analyses in SPSS</li>
+<li>A .sav file with stacked datasets for analysis as MI data in SPSS</li>
+<li>A list of datasets for analysis in R (or further processing)</li>
+</ol>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="do">## List of imputed datasets for analysis in R and further processing:</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>impList <span class="ot">&lt;-</span> <span class="fu">complete</span>(miceOut, <span class="at">action =</span> <span class="st">&quot;all&quot;</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Stack the imputated datasets for analysis in SPSS:</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> <span class="fu">complete</span>(miceOut, <span class="at">action =</span> <span class="st">&quot;long&quot;</span>, <span class="at">include =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Rename the imputation indicator as per SPSS&#39;s preference:</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> <span class="fu">rename</span>(impStack, <span class="at">Imputation_ =</span> .imp)</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Do we need the new .id variable? </span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(impStack, <span class="fu">all.equal</span>(.id, ID_random))</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="do">## NO. Remove the .id variable:</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> <span class="fu">select</span>(impStack, <span class="sc">-</span>.id)</span></code></pre></div>
+<p><em>NOTE</em>: <code>impList</code> does not include the original data but <code>impStack</code> does. I’ve included the original data in the stacked version becauase that’s what SPSS expects. We don’t include it in the list version because we don’t usually want the raw data when analyzing the imputed data.</p>
+<hr />
+<div id="post-processing" class="section level2">
+<h2>Post-Processing</h2>
+<p>Before we can save these data, we need to do a bit of post-processing.</p>
+<ol style="list-style-type: decimal">
+<li>First, we need to add the <code>partner</code> variable back onto the imputed datasets.</li>
+</ol>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>impList <span class="ot">&lt;-</span> <span class="fu">lapply</span>(impList, </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                  <span class="cf">function</span>(x, partner) <span class="fu">data.frame</span>(x, partner), </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">partner =</span> partner)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> </span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(impStack, </span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">partner =</span> <span class="fu">rep</span>(partner, <span class="fu">length</span>(<span class="fu">unique</span>(impStack<span class="sc">$</span>Imputation_)))</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>             )</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Order the columns as in the original data:</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> impStack[<span class="fu">c</span>(<span class="st">&quot;Imputation_&quot;</span>, cn)]</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>impList  <span class="ot">&lt;-</span> <span class="fu">lapply</span>(impList, <span class="cf">function</span>(x, y) x[y], <span class="at">y =</span> cn)</span></code></pre></div>
+<ol style="list-style-type: decimal">
+<li>We’ll save the list of R datasets before they get mangled for SPSS usage.</li>
+</ol>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(impList, <span class="fu">paste0</span>(dataDir, <span class="st">&quot;imputed_burn_data.rds&quot;</span>))</span></code></pre></div>
+<ol style="list-style-type: decimal">
+<li>Next, we need to add back the label information.</li>
+</ol>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Define a function to add back the label information:</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>reLabel <span class="ot">&lt;-</span> <span class="cf">function</span>(data, variableLabels, valueLabels) {</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  vars <span class="ot">&lt;-</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(data), <span class="fu">names</span>(variableLabels))</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>                      </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(v <span class="cf">in</span> vars) {</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">var_label</span>(data[[v]])  <span class="ot">&lt;-</span> variableLabels[[v]] </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">val_labels</span>(data[[v]]) <span class="ot">&lt;-</span> valueLabels[[v]]</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  data</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Add labels back to the stacked data:</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>impStack <span class="ot">&lt;-</span> <span class="fu">reLabel</span>(impStack, varLabs, valLabs)</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Add label information for imputation indicator:</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a><span class="fu">var_label</span>(impStack<span class="sc">$</span>Imputation_)    <span class="ot">&lt;-</span> <span class="st">&quot;Imputation Number&quot;</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a><span class="fu">val_label</span>(impStack<span class="sc">$</span>Imputation_, <span class="dv">0</span>) <span class="ot">&lt;-</span> <span class="st">&quot;Original (Incomplete) Data&quot;</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(m <span class="cf">in</span> <span class="dv">1</span> <span class="sc">:</span> miceOut<span class="sc">$</span>m)</span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">val_label</span>(impStack<span class="sc">$</span>Imputation_, m) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">&quot;Imputed Dataset&quot;</span>, m)</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="do">## Add labels back to the list of imputed data:</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>impList <span class="ot">&lt;-</span> <span class="fu">lapply</span>(impList, </span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>                  reLabel, </span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>                  <span class="at">variableLabels =</span> varLabs, </span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>                  <span class="at">valueLabels =</span> valLabs)</span></code></pre></div>
+<ol style="list-style-type: decimal">
+<li>Finally, we need to write the SPSS-format data to disk.</li>
+</ol>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Save the stacked data:</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_sav</span>(impStack, <span class="fu">paste0</span>(dataDir, <span class="st">&quot;imputed_burn_data.sav&quot;</span>))</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Save each of the imputed datasets:</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span> <span class="sc">:</span> <span class="fu">length</span>(impList))</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_sav</span>(impList[[i]], </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">paste0</span>(dataDir, <span class="st">&quot;separate/imputed_burn_data_&quot;</span>, i, <span class="st">&quot;.sav&quot;</span>)</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>            ) </span></code></pre></div>
 </div>
 </div>
     </section>

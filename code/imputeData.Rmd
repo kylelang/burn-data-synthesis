@@ -48,6 +48,8 @@ library(haven)
 library(mice)
 library(xtable)
 library(knitr)
+library(dplyr)
+library(labelled)
 
 source("quickpred_custom.R")
 
@@ -73,7 +75,18 @@ findings during data cleaning.
 `parnter_incl`.
 
 ```{r}
+## Save the partner flag and metadata for later use:
+partner <- dat0$partner
+
+varLabs <- sapply(dat0, var_label)
+valLabs <- lapply(dat0, val_labels)
+cn      <- colnames(dat0)
+
+## Remove the problematic variables:
 dat0 <- dat0[setdiff(colnames(dat0), c("partner", "empty_partner_data"))]
+
+## We won't want to add back "empty_partner_data"
+cn <- setdiff(cn, "empty_partner_data")
 ```
 
 The `mice()` function won't work with labelled vectors from **haven**, so we 
@@ -293,3 +306,108 @@ dev.off()
 ```
 
 The imputations all look plausible. 
+
+# Exporting the Imputed Data
+
+We'll export the data in three formats:
+
+1. Individual .sav files for single-dataset analyses in SPSS
+1. A .sav file with stacked datasets for analysis as MI data in SPSS
+1. A list of datasets for analysis in R (or further processing)
+
+```{r}
+## List of imputed datasets for analysis in R and further processing:
+impList <- complete(miceOut, action = "all")
+
+## Stack the imputated datasets for analysis in SPSS:
+impStack <- complete(miceOut, action = "long", include = TRUE)
+
+## Rename the imputation indicator as per SPSS's preference:
+impStack <- rename(impStack, Imputation_ = .imp)
+
+## Do we need the new .id variable? 
+with(impStack, all.equal(.id, ID_random))
+
+## NO. Remove the .id variable:
+impStack <- select(impStack, -.id)
+```
+
+*NOTE*: `impList` does not include the original data but `impStack` does. I've 
+included the original data in the stacked version becauase that's what SPSS 
+expects. We don't include it in the list version because we don't usually want 
+the raw data when analyzing the imputed data.
+
+---
+
+## Post-Processing
+
+Before we can save these data, we need to do a bit of post-processing.
+
+1. First, we need to add the `partner` variable back onto the imputed datasets.
+
+```{r}
+impList <- lapply(impList, 
+                  function(x, partner) data.frame(x, partner), 
+                  partner = partner)
+
+impStack <- 
+  data.frame(impStack, 
+             partner = rep(partner, length(unique(impStack$Imputation_)))
+             )
+
+## Order the columns as in the original data:
+impStack <- impStack[c("Imputation_", cn)]
+impList  <- lapply(impList, function(x, y) x[y], y = cn)
+```
+
+1. We'll save the list of R datasets before they get mangled for SPSS usage.
+
+```{r}
+saveRDS(impList, paste0(dataDir, "imputed_burn_data.rds"))
+```
+
+1. Next, we need to add back the label information.
+
+```{r}
+## Define a function to add back the label information:
+reLabel <- function(data, variableLabels, valueLabels) {
+  vars <- intersect(colnames(data), names(variableLabels))
+                      
+  for(v in vars) {
+    var_label(data[[v]])  <- variableLabels[[v]] 
+    val_labels(data[[v]]) <- valueLabels[[v]]
+  }
+  
+  data
+}
+
+## Add labels back to the stacked data:
+impStack <- reLabel(impStack, varLabs, valLabs)
+
+## Add label information for imputation indicator:
+var_label(impStack$Imputation_)    <- "Imputation Number"
+val_label(impStack$Imputation_, 0) <- "Original (Incomplete) Data"
+
+for(m in 1 : miceOut$m)
+  val_label(impStack$Imputation_, m) <- paste("Imputed Dataset", m)
+
+## Add labels back to the list of imputed data:
+impList <- lapply(impList, 
+                  reLabel, 
+                  variableLabels = varLabs, 
+                  valueLabels = valLabs)
+```
+
+1. Finally, we need to write the SPSS-format data to disk. 
+
+```{r}
+## Save the stacked data:
+write_sav(impStack, paste0(dataDir, "imputed_burn_data.sav"))
+
+## Save each of the imputed datasets:
+for(i in 1 : length(impList))
+  write_sav(impList[[i]], 
+            paste0(dataDir, "separate/imputed_burn_data_", i, ".sav")
+            ) 
+```
+
